@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  php7:
+    build:
+      context: .
+      args:
+        - NAME_IMAGE=php:cli-alpine
+    image: test/local:php7
+    volumes:
+      - ./composer.json:/app/composer.json
+      - ./composer.lock:/app/composer.lock
+  php8:
+    build:
+      context: .
+      args:
+        - NAME_IMAGE=keinos/php8-jit:latest
+    image: test/local:php8
