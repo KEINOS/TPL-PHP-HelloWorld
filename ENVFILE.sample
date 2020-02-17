@@ -1,0 +1,4 @@
+# ENV variables
+
+# Check your token of your target repo in https://coveralls.io/
+COVERALLS_REPO_TOKEN=<YOUR TOKEN HERE>

@@ -1,18 +1,33 @@
 language: php
 
+env:
+  global:
+  - PHAN_DISABLE_XDEBUG_WARN=1
+
+install: /bin/bash ./setup-composer.sh
+
 php:
-  # Latest Stable of PHP v7.0
-  - 7.0.33
+  # Latest Stable of PHP v7.0 (Deprecated since phpstan/extension-installer supports only ^7.1)
+  #- 7.0.33
   # Default PHP version in macOS HighSierra(10.13.6) and Mojave(10.14.4)
   - 7.1.23
   # Latest Stable of PHP v7.1
-  - 7.1.32
+  - 7.1.33
   # Latest Stable of PHP v7.2
-  - 7.2.22
-  # Current Stable 2019.09.16
+  - 7.2.27
+  # Latest Stable of PHP v7.3
+  - 7.3.14
+  # Current Stable 2020.02.14
   #   https://www.php.net/downloads.php
-  - 7.3.9
-  # latest version of PHP
+  - 7.4.2
+  # latest version of PHP (PHP 8.0.0-dev)
   - nightly
 
-script: /run-tests.sh
+script: /bin/bash ./run-tests.sh
+
+jobs:
+  allow_failures:
+    - php: nightly
+
+after_success:
+  - vendor/bin/php-coveralls -v

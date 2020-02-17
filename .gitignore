@@ -1,4 +1,7 @@
-composer.lock
 vendor/*
 .phan/*
 tools/*
+
+composer.lock
+psalm.xml
+ENVFILE
