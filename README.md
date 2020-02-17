@@ -27,10 +27,11 @@ This repo uses the following CIs. On your use, register your repo first and run 
 
 ## How To Use The Template
 
-1. Copy/Clone/Fork the repo as a new project.
-    - Use this template to fork the repo.
+1. Copy/Clone/Fork the repo as a new project ether one of the following way.
+    - [Use this template](https://github.com/KEINOS/TPL-PHP-HelloWorld/generate) to fork the repo.
     - Clone this repo and delete the `.git` directory then `git init`.
     - Use `composer` as new package.
+      - `composer create-project keinos/hello-world-tpl`
 2. Push the repo to GitHub then register it to the following CIs.
     - TravisCI
     - COVERALLS
