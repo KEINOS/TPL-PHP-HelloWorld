@@ -35,8 +35,8 @@ This repo uses the following CIs. On your use, register your repo first and run 
 2. Push the repo to GitHub then register it to the following CIs.
     - TravisCI
     - COVERALLS
-3. Re-name `ENVFILE.sample` to `ENVFILE`
-4. Get your access token from COVERALLS' settings and replace the token value in `ENVFILE`.
+3. Re-name `ENVFILE.env.sample` to `ENVFILE.env`
+4. Get your access token from COVERALLS' settings and replace the token value in `ENVFILE.env`.
 5. Commit changes and push to see if the tests passes.
 6. If the tests passes on CIs then start building your project.
 

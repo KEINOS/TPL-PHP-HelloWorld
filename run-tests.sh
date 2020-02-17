@@ -6,8 +6,8 @@
 
 cd $(cd $(dirname $0); pwd)
 
-[ -e ./ENVFILE ] && {
-    source ./ENVFILE
+[ -e ./ENVFILE.env ] && {
+    source ./ENVFILE.env
     export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
     export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
 }
