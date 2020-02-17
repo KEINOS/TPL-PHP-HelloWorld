@@ -6,6 +6,12 @@
 
 cd $(cd $(dirname $0); pwd)
 
+[ -e ./ENVFILE ] && {
+    source ./ENVFILE
+    export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
+    export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
+}
+
 # Set width
 if [ -n "${TERM}" ];
     then SCREEN_WIDTH=$(tput cols);
@@ -42,9 +48,9 @@ function echoTitle () {
 echoTitle 'Diagnose: composer'
 composer diagnose 1>/dev/null
 if [ $? -eq 0 ];
-    then echoMsg 'Diagnose: passed'
+    then echoMsg '✅ Diagnose: passed'
     else {
-        echoMsg 'Diagnose: failed'
+        echoMsg '❌ Diagnose: failed'
         all_tests_passed=1
     }
 fi
@@ -52,9 +58,9 @@ fi
 echoTitle 'TEST: PHPUnit'
 ./vendor/bin/phpunit
 if [ $? -eq 0 ];
-    then echoMsg 'PHPUnit: passed';
+    then echoMsg '✅ PHPUnit: passed';
     else {
-        echoMsg 'PHPUnit: failed'
+        echoMsg '❌ PHPUnit: failed'
         all_tests_passed=1
     }
 fi
@@ -63,22 +69,28 @@ echoTitle 'TEST: Code Coverage'
 ./vendor/bin/php-coveralls --verbose --dry-run
 if [ $? -eq 0 ];
     then {
-        echoMsg 'COVERALLS: finished'
+        echoMsg '✅ COVERALLS: finished'
         cat ./report/clover.xml
         cat ./report/coveralls-upload.json
     };
     else {
-        echoMsg 'COVERALLS: failed'
-        all_tests_passed=1
+        php -v | grep Xdebug 1>/dev/null 2>/dev/null
+        [ $? -eq 0 ] && {
+            echoMsg '❌ COVERALLS: failed'
+            all_tests_passed=1
+        } || {
+            echoMsg '🛑 COVERALLS: SKIP'
+            echo '- Xdebug extension is not enabled.'
+        }
     }
 fi
 
 echoTitle 'TEST: PHPStan'
 ./vendor/bin/phpstan analyse src --level=max
 if [ $? -eq 0 ];
-    then echoMsg 'PHPStan: passed';
+    then echoMsg '✅ PHPStan: passed';
     else {
-        echoMsg 'PHPStan: failed'
+        echoMsg '❌ PHPStan: failed'
         all_tests_passed=1
     }
 fi
@@ -86,9 +98,9 @@ fi
 echoTitle 'TEST: PSalm w/fix issue'
 ./vendor/bin/psalm --alter --issues=all
 if [ $? -eq 0 ];
-    then echoMsg 'PSalm: passed';
+    then echoMsg '✅ PSalm: passed';
     else {
-        echoMsg 'PSalm: failed'
+        echoMsg '❌ PSalm: failed'
         all_tests_passed=1
     }
 fi
@@ -96,9 +108,9 @@ fi
 echoTitle 'TEST: Phan'
 ./vendor/bin/phan --allow-polyfill-parser
 if [ $? -eq 0 ];
-    then echoMsg 'Phan: passed';
+    then echoMsg '✅ Phan: passed';
     else {
-        echoMsg 'Phan: failed'
+        echoMsg '❌ Phan: failed'
         all_tests_passed=1
     }
 fi

@@ -4,4 +4,4 @@ tools/*
 
 composer.lock
 psalm.xml
-ENVFILE
+./ENVFILE
