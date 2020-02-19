@@ -1,0 +1,19 @@
+{
+	"name": "Dev Container for PHP7",
+	"dockerFile": "Dockerfile",
+	"settings": {
+		"terminal.integrated.shell.linux": "/bin/bash"
+	},
+	"appPort": [
+        "5963"
+    ],
+	"postCreateCommand": "php -v",
+	"remoteUser": "vscode",
+	"extensions": [
+		"ms-ceintl.vscode-language-pack-ja",
+		"felixfbecker.php-debug",
+        "bmewburn.vscode-intelephense-client",
+		"junstyle.php-cs-fixer",
+		"rexshi.phpdoc-comment-vscode-plugin"
+	]
+}

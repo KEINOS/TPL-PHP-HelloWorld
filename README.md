@@ -64,3 +64,9 @@ $ # Run all tests
 $ docker-compose up && echo $?
 ...
 ```
+
+## VSCode
+
+If you use Visual Studio Code then you can use "Remote - Containers" extension to develop over Docker container.
+
+Install Microsoft's "Remote - Containers" and "Open Folder in Container" by F1 -> "Remote-Containers".
