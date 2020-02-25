@@ -7,7 +7,7 @@ services:
       args:
         - NAME_IMAGE=php:7.1.23-cli-alpine
     image: test/local:7.1.23
-    env_file: ./ENVFILE
+    env_file: ./ENVFILE.env
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -18,7 +18,7 @@ services:
       args:
         - NAME_IMAGE=php:7.1.33-cli-alpine
     image: test/local:7.1.33
-    env_file: ./ENVFILE
+    env_file: ./ENVFILE.env
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -31,7 +31,7 @@ services:
       args:
         - NAME_IMAGE=php:7.2.27-cli-alpine
     image: test/local:7.2.27
-    env_file: ./ENVFILE
+    env_file: ./ENVFILE.env
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -44,7 +44,7 @@ services:
       args:
         - NAME_IMAGE=php:7.3.14-cli-alpine
     image: test/local:7.3.14
-    env_file: ./ENVFILE
+    env_file: ./ENVFILE.env
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -57,7 +57,7 @@ services:
       args:
         - NAME_IMAGE=php:7.4.2-cli-alpine
     image: test/local:7.4.2
-    env_file: ./ENVFILE
+    env_file: ./ENVFILE.env
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -70,7 +70,7 @@ services:
       args:
         - NAME_IMAGE=php:cli-alpine
     image: test/local:latest
-    env_file: ./ENVFILE
+    env_file: ./ENVFILE.env
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
