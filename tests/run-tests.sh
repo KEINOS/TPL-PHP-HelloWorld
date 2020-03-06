@@ -36,16 +36,45 @@ function getPathScript () {
 }
 
 function isInsideContainer () {
-    [ -f /.dockerenv ] && return 0 || return 1
+    isInsideTravis && {
+        return 0
+    }
+
+    [ -f /.dockerenv ] && {
+        return 0
+    }
+
+    return 1
 }
+
+function isInsideTravis () {
+    echo $(cd ~/ && pwd) | grep travis 1>/dev/null 2>/dev/null && {
+        return 0
+    }
+
+    return 1
+}
+
+# =============================================================================
+#  Setup
+# =============================================================================
+
+# Set width
+which tput 2>/dev/null 1>/dev/null && [ -n "${TERM}" ] && {
+    SCREEN_WIDTH=$(tput cols);
+} || {
+    SCREEN_WIDTH=80;
+}
+
+all_tests_passed=0
+
+# Moving to script's parent directory.
+cd "$(getPathParent)"
 
 # =============================================================================
 #  RUN Tests on local (Recall this script via Docker)
 # =============================================================================
 ! isInsideContainer && {
-    # Move to script's parent directory.
-    cd "$(getPathParent)"
-
     [ "${1}" = "build" ] && {
         echoMsg 'Rebuilding test container ...'
         docker-compose build --no-cache test || {
@@ -54,6 +83,7 @@ function isInsideContainer () {
         }
     }
     echoMsg 'Calling test container ...'
+    echoTitle 'Running Tests in Container'
     docker-compose run test
     result=$?
 
@@ -67,34 +97,18 @@ function isInsideContainer () {
 # =============================================================================
 #  RUN Tests on Container (Actual Tests)
 # =============================================================================
-# Move to script's parent directory.
-cd "$(getPathParent)"
-
-echoTitle 'Running tests on docker'
-
-# -----------------------------------------------------------------------------
-#  Setup
-# -----------------------------------------------------------------------------
-
-# Load Token for COVERALLS
-[ -e ./tests/conf/COVERALLS.env ] && {
-    source ./tests/conf/COVERALLS.env
-    export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
-    export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
-}
-
-# Set width
-which tput 2>/dev/null 1>/dev/null && [ -n "${TERM}" ] && {
-    SCREEN_WIDTH=$(tput cols);
-} || {
-    SCREEN_WIDTH=80;
-}
-
-all_tests_passed=0
+echoTitle 'Running tests'
 
 # -----------------------------------------------------------------------------
 #  Main
 # -----------------------------------------------------------------------------
+
+# Load Token for COVERALLS
+[ -f ./tests/conf/COVERALLS.env ] && {
+    source ./tests/conf/COVERALLS.env
+    export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
+    export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
+}
 
 echoTitle 'Diagnose: composer'
 composer diagnose
@@ -126,12 +140,19 @@ fi
 echoTitle 'TEST: Code Coverage'
 [ "${COVERALLS_REPO_TOKEN:+notfound}" ] && {
     echo '- Token for COVERALLS found.'
+
     COVERALLS_RUN_LOCALLY=1
+    dry_run_mode='--dry-run'
+    isInsideTravis && {
+        echo '- Running inside Travis detected.'
+        COVERALLS_RUN_LOCALLY=
+        dry_run_mode=
+    }
     ./vendor/bin/php-coveralls \
         --config=./tests/conf/coveralls.yml \
         --json_path=./report/coveralls-upload.json \
         --verbose \
-        --dry-run \
+        $dry_run_mode \
         --no-interaction
     if [ $? -eq 0 ];
         then {
@@ -165,7 +186,6 @@ fi
 
 echoTitle 'TEST: PSalm w/fix issue'
 ./vendor/bin/psalm \
-    --debug \
     --root ./src \
     --alter \
     --issues=all
@@ -178,7 +198,10 @@ if [ $? -eq 0 ];
 fi
 
 echoTitle 'TEST: Phan'
-./vendor/bin/phan --allow-polyfill-parser
+PHAN_DISABLE_XDEBUG_WARN=1 \
+./vendor/bin/phan \
+    --allow-polyfill-parser \
+    --directory ./src
 if [ $? -eq 0 ];
     then echoMsg '✅  Phan: passed';
     else {
