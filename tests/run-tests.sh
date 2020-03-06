@@ -161,6 +161,7 @@ echoTitle 'TEST: Code Coverage'
             php -v | grep Xdebug 1>/dev/null 2>/dev/null
             [ $? -eq 0 ] && {
                 echoMsg '❌  COVERALLS: failed'
+                env
                 all_tests_passed=1
             } || {
                 echoMsg '🛑  COVERALLS: SKIP'
