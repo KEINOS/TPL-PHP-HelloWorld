@@ -127,8 +127,7 @@ rm -rf ./report/*
 echo '- Running PHPUnit'
 ./vendor/bin/phpunit \
     --configuration ./tests/conf/phpunit.xml \
-    --testdox \
-    --no-interaction
+    --testdox
 if [ $? -eq 0 ];
     then echoMsg '✅  PHPUnit: passed';
     else {
