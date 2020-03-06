@@ -75,6 +75,10 @@ which composer 1>/dev/null
 
     source ./.devcontainer/install_composer.sh
 }
+[ -f ~/.composer/keys.tags.pub ] && [ -f ~/.composer/keys.dev.pub ] || {
+    php -r "copy('https://composer.github.io/releases.pub', '~/.composer/keys.tags.pub');" && \
+    php -r "copy('https://composer.github.io/snapshots.pub', '~/.composer/keys.dev.pub');"
+}
 echoMsg "💡  $(composer --version)"
 
 echoSubTitle 'DIAGNOSE: Diagnosing composer'
@@ -85,7 +89,7 @@ composer diagnose || {
 echoMsg '✅ Composer diagnose test passed.'
 
 echoSubTitle 'VALIDATION: composer.yml'
-[ -e ./composer.json ] || {
+[ -f ./composer.json ] || {
     echoMsg '💡  EXIT: ".composer.yml" not found.'
     exit
 }
