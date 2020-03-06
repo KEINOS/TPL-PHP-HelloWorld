@@ -4,7 +4,7 @@ env:
   global:
   - PHAN_DISABLE_XDEBUG_WARN=1
 
-install: sudo /bin/bash ./setup-composer.sh && sudo apt-get install tree
+install: sudo /bin/bash ./setup-composer.sh --dev
 
 php:
   # Latest Stable of PHP v7.0 (Deprecated since phpstan/extension-installer supports only ^7.1)
@@ -30,4 +30,4 @@ jobs:
     - php: nightly
 
 after_success:
-  - tree; pwd; ls -la ./vendor; vendor/bin/php-coveralls -v --config=./tests/conf/coveralls.yml --json_path=./report/coveralls-upload.json_path
+  - ls -la ./vendor; vendor/bin/php-coveralls -v --config=./tests/conf/coveralls.yml --json_path=./report/coveralls-upload.json_path
