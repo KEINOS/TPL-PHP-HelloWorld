@@ -144,7 +144,9 @@ echoTitle 'TEST: Code Coverage'
     dry_run_mode='--dry-run'
     isInsideTravis && {
         echo '- Running inside Travis detected.'
-        COVERALLS_RUN_LOCALLY=
+        TRAVIS=${TRAVIS:-true}
+        COVERALLS_RUN_LOCALLY=1
+        CI_NAME=${CI_NAME:-travis-ci}
         dry_run_mode=
     }
     ./vendor/bin/php-coveralls \
@@ -161,7 +163,8 @@ echoTitle 'TEST: Code Coverage'
             php -v | grep Xdebug 1>/dev/null 2>/dev/null
             [ $? -eq 0 ] && {
                 echoMsg '❌  COVERALLS: failed'
-                env
+                echo '- ENV'; env | sort
+                echo '- Other variables'; (set -o posix ; set)
                 all_tests_passed=1
             } || {
                 echoMsg '🛑  COVERALLS: SKIP'
