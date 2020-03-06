@@ -124,8 +124,9 @@ if [ $? -eq 0 ];
 fi
 
 echoTitle 'TEST: Code Coverage'
-echo $COVERALLS_REPO_TOKEN
 [ "${COVERALLS_REPO_TOKEN:+notfound}" ] && {
+    echo '- Token for COVERALLS found.'
+    COVERALLS_RUN_LOCALLY=1
     ./vendor/bin/php-coveralls \
         --config=./tests/conf/coveralls.yml \
         --json_path=./report/coveralls-upload.json \
