@@ -30,4 +30,4 @@ jobs:
     - php: nightly
 
 after_success:
-  - ./vendor/bin/php-coveralls -v --config=./tests/conf/coveralls.yml --coverage_clover=./report/clover.xml --json_path=./report/coveralls-upload.json_path
+  - ./vendor/bin/php-coveralls -v --config=./tests/conf/coveralls.yml --coverage_clover=./report/clover.xml --json_path=./report/coveralls-upload.json
