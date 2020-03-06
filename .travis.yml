@@ -30,4 +30,4 @@ jobs:
     - php: nightly
 
 after_success:
-  - vendor/bin/php-coveralls -v --config=./tests/conf/coveralls.yml --json_path=./report/coveralls-upload.json_path
+  - tree; pwd; ls -la; vendor/bin/php-coveralls -v --config=./tests/conf/coveralls.yml --json_path=./report/coveralls-upload.json_path
