@@ -78,6 +78,7 @@ which composer 1>/dev/null
 [ -f ~/.composer/keys.tags.pub ] && [ -f ~/.composer/keys.dev.pub ] || {
     echoMsg '💡  Composer Public Keys not fond'
     echo '- Downloding pub keys for composer ...'
+    mkdir -p ~/.composer
     wget https://composer.github.io/releases.pub -O ~/.composer/keys.tags.pub && \
     wget https://composer.github.io/snapshots.pub -O ~/.composer/keys.dev.pub || {
         echoMsg '❌ ERROR: Failed to download pub keys.'
