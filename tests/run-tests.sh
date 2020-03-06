@@ -144,9 +144,9 @@ echoTitle 'TEST: Code Coverage'
     dry_run_mode='--dry-run'
     isInsideTravis && {
         echo '- Running inside Travis detected.'
-        TRAVIS=${TRAVIS:-true}
-        COVERALLS_RUN_LOCALLY=1
-        CI_NAME=${CI_NAME:-travis-ci}
+        export TRAVIS=${TRAVIS:-true}
+        export COVERALLS_RUN_LOCALLY=1
+        export CI_NAME=${CI_NAME:-travis-ci}
         dry_run_mode=
     }
     ./vendor/bin/php-coveralls \
