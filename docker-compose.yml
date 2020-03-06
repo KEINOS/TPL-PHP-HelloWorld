@@ -9,6 +9,8 @@ services:
       args:
         - NAME_IMAGE=php:7.4.3-cli-alpine
     image: test/local:7.4.3
+    environment:
+      - COVERALLS_REPO_TOKEN
     volumes:
       - ./.git/:/app/.git
       - ./src:/app/src
