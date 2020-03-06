@@ -1,78 +1,16 @@
+# This docker-compose file is to run tests on Docker.
 version: "3.7"
 
 services:
-  7.1.23:
+  test:
     build:
       context: .
+      dockerfile: ./.testcontainer/Dockerfile
       args:
-        - NAME_IMAGE=php:7.1.23-cli-alpine
-    image: test/local:7.1.23
-    env_file: ./ENVFILE.env
+        - NAME_IMAGE=php:7.4.3-cli-alpine
+    image: test/local:7.4.3
     volumes:
+      - ./.git/:/app/.git
       - ./src:/app/src
       - ./tests:/app/tests
-
-  7.1.33:
-    build:
-      context: .
-      args:
-        - NAME_IMAGE=php:7.1.33-cli-alpine
-    image: test/local:7.1.33
-    env_file: ./ENVFILE.env
-    volumes:
-      - ./src:/app/src
-      - ./tests:/app/tests
-    depends_on:
-      - 7.1.23
-
-  7.2.27:
-    build:
-      context: .
-      args:
-        - NAME_IMAGE=php:7.2.27-cli-alpine
-    image: test/local:7.2.27
-    env_file: ./ENVFILE.env
-    volumes:
-      - ./src:/app/src
-      - ./tests:/app/tests
-    depends_on:
-      - 7.1.33
-
-  7.3.14:
-    build:
-      context: .
-      args:
-        - NAME_IMAGE=php:7.3.14-cli-alpine
-    image: test/local:7.3.14
-    env_file: ./ENVFILE.env
-    volumes:
-      - ./src:/app/src
-      - ./tests:/app/tests
-    depends_on:
-      - 7.2.27
-
-  7.4.2:
-    build:
-      context: .
-      args:
-        - NAME_IMAGE=php:7.4.2-cli-alpine
-    image: test/local:7.4.2
-    env_file: ./ENVFILE.env
-    volumes:
-      - ./src:/app/src
-      - ./tests:/app/tests
-    depends_on:
-      - 7.3.14
-
-  latest:
-    build:
-      context: .
-      args:
-        - NAME_IMAGE=php:cli-alpine
-    image: test/local:latest
-    env_file: ./ENVFILE.env
-    volumes:
-      - ./src:/app/src
-      - ./tests:/app/tests
-    depends_on:
-      - 7.4.2
+      - ./report:/app/report

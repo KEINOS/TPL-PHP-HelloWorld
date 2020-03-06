@@ -7,7 +7,7 @@
 	"appPort": [
         "5963"
     ],
-	"postCreateCommand": "php -v",
+	"postCreateCommand": "php --version; composer --version; sudo bash setup-composer.sh --dev; composer update; echo 'export LANG=ja_JP.UTF-8' >> ~/.bashrc",
 	"remoteUser": "vscode",
 	"extensions": [
 		"ms-ceintl.vscode-language-pack-ja",

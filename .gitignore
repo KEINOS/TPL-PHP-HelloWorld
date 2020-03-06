@@ -2,12 +2,12 @@
 ##  Ignore Local Spcific Dirs/Files
 ## ============================================================================
 vendor/*
-.phan/*
 tools/*
+report/*
 
 composer.lock
 psalm.xml
-ENVFILE.env
+COVERALLS.env
 
 ## ============================================================================
 ## Ignore Visual Studio temporary files, build results, and

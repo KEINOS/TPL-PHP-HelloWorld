@@ -7,6 +7,6 @@ final class HelloWorld
 {
     public function to(string $name):string
     {
-        return "Hello, ${name}!";
+        return sayHelloTo($name);
     }
 }

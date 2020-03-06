@@ -5,13 +5,23 @@ namespace KEINOS\HelloWorld;
 
 use KEINOS\HelloWorld\TestCase;
 
-final class HelloTest extends TestCase
+final class ClassHelloWorldTest extends TestCase
 {
-    public function test()
+    public function testHelloWorld()
     {
         $subject = new HelloWorld();
 
-        $this->assertSame('Hello, World!', $subject->to('World'));
-        $this->assertSame('Hello, Miku!', $subject->to('Miku'));
+        $expect = 'Hello, World!';
+        $this->expectOutputString($expect);
+        echo $subject->to('World');
+    }
+
+    public function testHelloMiku()
+    {
+        $subject = new HelloWorld();
+
+        $expect = 'Hello, Miku!';
+        $this->expectOutputString($expect);
+        echo $subject->to('Miku');
     }
 }

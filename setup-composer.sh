@@ -9,16 +9,24 @@ function echoHR(){
 }
 
 function echoMsg () {
+    echo "- ${1}"
+}
+
+function echoSubTitle () {
     echoHR '-'
-    echo ' ' $1
+    echo "■  $1"
     echoHR '-'
 }
 
 function echoTitle () {
     echo
     echoHR
-    echo ' ' $1
+    echo "  ${1}"
     echoHR
+}
+
+function isModeDev () {
+    [ "${1}" = "--dev" ] && return 0 || return 1
 }
 
 function isPHP8 () {
@@ -38,70 +46,70 @@ if [ -n "${TERM}" ];
     else SCREEN_WIDTH=80;
 fi
 
-echoTitle 'CHECK: PHP'
+# =============================================================================
+#  Main
+# =============================================================================
+
+echoTitle 'Install & Setup PHP Composer'
+
+echoSubTitle 'NOTE'
+isModeDev $1 && {
+    echo 'Option "--dev" detected. Dev dependencies will be installed.'
+} || {
+    echo 'No dev dependencies will be installed. To install them, use "--dev" option.'
+}
+
+echoSubTitle 'CHECK: PHP bin'
 which php 1>/dev/null
 [ $? -ne 0 ] && {
     echoMsg 'ERROR: No PHP found. PHP must be installed.'
     exit 1
 }
-php -v
+echoMsg "💡  $(php -v)"
 
-composer_newly_installed=1
-echoTitle 'CHECK: Composer'
+echoSubTitle 'CHECK: Composer bin'
 which composer 1>/dev/null
 [ $? -ne 0 ] && {
     echo '- Composer not found.'
     echoTitle 'Installing composer.'
 
-    EXPECTED_SIGNATURE="$(wget -q -O - https://composer.github.io/installer.sig)"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_SIGNATURE="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-
-    if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
-    then
-        >&2 echoMsg 'ERROR: Invalid installer signature'
-        rm composer-setup.php
-        exit 1
-    fi
-
-    php composer-setup.php --quiet
-    rm composer-setup.php
-    mv ./composer.phar $(dirname $(which php))/composer && chmod +x $(dirname $(which php))/composer && \
-    composer_newly_installed=0
+    source ./.devcontainer/install_composer.sh
 }
-composer --version
+echoMsg "💡  $(composer --version)"
 
-echoTitle 'DIAGNOSE: Diagnosing composer'
+echoSubTitle 'DIAGNOSE: Diagnosing composer'
 composer diagnose || {
-    echoMsg 'ERROR: Composer diagnose failed.'
+    echoMsg '❌ ERROR: Composer diagnose failed.'
     exit 1
 }
+echoMsg '✅ Composer diagnose test passed.'
 
-[ -e ./composer.json ] && {
-    echo '- composer.json found'
-    echoMsg 'Validating composer.json ...'
-    composer validate || {
-        echoMsg 'ERROR: Invalid composer.json format.'
-        exit 1
-    }
+echoSubTitle 'VALIDATION: composer.yml'
+[ -e ./composer.json ] || {
+    echoMsg '💡  EXIT: ".composer.yml" not found.'
+    exit
 }
+echoMsg '💡  composer.json found. Validating ...'
+composer validate || {
+    echoMsg '❌ ERROR: Invalid composer.json format.'
+    exit 1
+}
+echoMsg '✅ Valid composer format!'
 
-echoTitle 'Installing dependencies'
-composer install --no-interaction;
-
-echoTitle 'Installing composer packages for tests ...'
-
-echoMsg 'INSTALL: phpstan'
-composer bin phpstan require phpstan/phpstan phpstan/extension-installer
-
-echoMsg 'INSTALL: psalm'
-composer bin psalm require vimeo/psalm
-[ ! -e ./psalm.xml ] && {
+echoSubTitle 'Installing dependencies'
+isModeDev $1 && {
+    composer install --no-interaction && \
+    ln -s ../psalm/phar/psalm.phar ./vendor/bin/psalm && \
+    ls -la ./vendor/bin && \
+    ls -l ./vendor/composer/../../ && \
     ./vendor/bin/psalm --init
+    result=$?
+} || {
+    composer install --no-dev --no-interaction
+    result=$?
 }
-
-echoMsg 'INSTALL: phan'
-composer bin phan require phan/phan
-[ ! -e ./.phan/config.php ] && {
-    ./vendor/bin/phan --init
+[ $result -ne 0 ] && {
+    echoMsg '❌ ERROR: Fail to install dependencies.'
+    exit 1
 }
+echoMsg '✅ Composer packages installed!'

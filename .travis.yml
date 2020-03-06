@@ -17,13 +17,13 @@ php:
   - 7.2.27
   # Latest Stable of PHP v7.3
   - 7.3.14
-  # Current Stable 2020.02.14
+  # Current Stable @ 20 Feb 2020
   #   https://www.php.net/downloads.php
-  - 7.4.2
+  - 7.4.3
   # latest version of PHP (PHP 8.0.0-dev)
   - nightly
 
-script: /bin/bash ./run-tests.sh
+script: /bin/bash ./tests/run-tests.sh
 
 jobs:
   allow_failures:

@@ -1,20 +1,16 @@
-ARG NAME_IMAGE=php:cli-alpine
-ARG COVERALLS_RUN_LOCALLY=1
-ARG COVERALLS_REPO_TOKEN
+# This Dockerfile is used to deploy/release the app in Docker image.
+# It uses the same latest PHP version in ".travis.yml".
+FROM php:7.4.2-cli-alpine
 
-FROM ${NAME_IMAGE}
+COPY ./src /app/src
+COPY ./composer.json /app/composer.json
+COPY ./.devcontainer/setup-composer.sh /app/setup-composer.sh
 
-COPY . /app
-USER root
-ENV COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
+# Install composer
 WORKDIR /app
-RUN apk --no-cache add \
-        git \
-        autoconf \
-        build-base && \
-    pecl install xdebug && \
-    docker-php-ext-enable xdebug && \
-    /app/setup-composer.sh && \
-    /app/run-tests.sh
+USER root
+RUN /app/setup-composer.sh
 
-ENTRYPOINT [ "/app/run-tests.sh" ]
+WORKDIR /app/src
+USER root
+ENTRYPOINT [ "php", "/app/src/Main.php" ]
