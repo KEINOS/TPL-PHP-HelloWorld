@@ -108,18 +108,22 @@ echoMsg '✅ Valid composer format!'
 
 echoSubTitle 'Installing dependencies'
 isModeDev $1 && {
+    echoMsg '💡  Installing WITH dev packages'
     composer install --no-interaction
     result=$?
     # some version of psalm forgets to create sym-link
     ! [ -f ./vendor/bin/psalm ] && {
+        echoMsg 'Creating sym-link to: ./vendor/bin/psalm'
         ln -s ../psalm/phar/psalm.phar ./vendor/bin/psalm
     }
     # check psalm.xml exists
     ! [ -f ./tests/conf/psalm.xml ] && {
+        echoMsg 'Creating psalm conf file to: ./test/conf/psalm.xml'
         ./vendor/bin/psalm --init source_dir="../../src" level=8 && \
-        mv -f ./psalm.xml ../test/conf/psalm.xml
+        mv -f ./psalm.xml ./test/conf/psalm.xml
     }
 } || {
+    echoMsg '💡  Installing with NO dev packages'
     composer install --no-dev --no-interaction
     result=$?
 }
