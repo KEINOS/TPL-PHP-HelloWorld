@@ -204,6 +204,7 @@ fi
 
 echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
 ./vendor/bin/psalm \
+    --config=./tests/conf/psalm.xml \
     --root ./src \
     --alter \
     --issues=all

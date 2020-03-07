@@ -6,7 +6,7 @@ tools/*
 report/*
 
 composer.lock
-psalm.xml
+/psalm.xml
 COVERALLS.env
 
 ## ============================================================================

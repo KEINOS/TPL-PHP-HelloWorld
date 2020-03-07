@@ -109,10 +109,12 @@ echoMsg '✅ Valid composer format!'
 echoSubTitle 'Installing dependencies'
 isModeDev $1 && {
     composer install --no-interaction && \
-    ln -s ../psalm/phar/psalm.phar ./vendor/bin/psalm && \
-    ls -la ./vendor/bin && \
-    ls -l ./vendor/composer/../../ && \
-    ./vendor/bin/psalm --init
+    ln -s ../psalm/phar/psalm.phar ./vendor/bin/psalm
+    # check psalm.xml exists
+    ! [ -f ./tests/conf/psalm.xml ] && {
+        ./vendor/bin/psalm --init source_dir="../../src" level=8 && \
+        mv -f ./psalm.xml ../test/conf/psalm.xml
+    }
     result=$?
 } || {
     composer install --no-dev --no-interaction
