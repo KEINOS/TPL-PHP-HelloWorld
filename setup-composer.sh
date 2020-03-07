@@ -122,11 +122,13 @@ isModeDev $1 && {
         ./vendor/bin/psalm --init source_dir="../../src" level=8 && \
         mv -f ./psalm.xml ./test/conf/psalm.xml
     }
-} || {
+}
+isModeDev $1 || {
     echoMsg '💡  Installing with NO dev packages'
     composer install --no-dev --no-interaction
     result=$?
 }
+
 [ $result -ne 0 ] && {
     echoMsg '❌ ERROR: Fail to install dependencies.'
     exit 1
