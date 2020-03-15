@@ -3,7 +3,7 @@
 
 # Hello-World Class Template
 
-This repo is a template of Hello-World class, which includes the following tests.
+This repo is a template of Hello-World class, which is overly cautious and includes the following tests.
 
 ## Tests
 
@@ -27,48 +27,41 @@ This repo uses the following CIs. On your use, register your repo first and run 
 
 ## How To Use The Template
 
-1. Copy/Clone/Fork the repo as a new project ether one of the following way.
-    - [Use this template](https://github.com/KEINOS/TPL-PHP-HelloWorld/generate) to fork the repo.
-    - Clone this repo and delete the `.git` directory then `git init`.
-    - Use `composer` as new package.
-      - `composer create-project keinos/hello-world-tpl`
-2. Push the repo to GitHub then register it to the following CIs.
+1. Create a new project with [composer](https://getcomposer.org/).
+
+    ```bash
+    composer create-project keinos/hello-world-tpl myNewProject
+    mv myNewProject
+    ```
+
+2. Run the tests to check it's basic test functionality.
+
+    ```bash
+    composer test local
+    ```
+
+    ```bash
+    # For Docker users
+    composer test
+    ```
+
+3. Create an empty Git repository and commit them.
+
+    ```bash
+    git init
+    git add .
+    git commit -m 'initial commit'
+    ```
+
+4. Push the repo to GitHub then register it to the following CIs.
     - TravisCI
     - COVERALLS
-3. Re-name `ENVFILE.env.sample` to `ENVFILE.env`
-4. Get your access token from COVERALLS' settings and replace the token value in `ENVFILE.env`.
-5. Commit changes and push to see if the tests passes.
-6. If the tests passes on CIs then start building your project.
 
-## How To Run Tests
-
-```shellsession
-$ composer test
-...
-```
-
-### General
-
-Commit changes and push. Then the CI runs your tests.
-
-### Local
-
-Using Docker and docker-compose eases your tests. Build the container image then run container/s.
-
-```shellsession
-$ # build
-$ docker-compose build --no-cache
-...
-```
-
-```shellsession
-$ # Run tests in PHP 7.1.23
-$ docker-compose up 7.1.23
-...
-$ # Run all tests
-$ docker-compose up && echo $?
-...
-```
+5. Re-name `ENVFILE.env.sample` to `ENVFILE.env`
+6. Get your access token from COVERALLS' settings and replace the token value in `ENVFILE.env`.
+7. Run tests again to see COVERALLS' function.
+8. If the local test passes then commit changes and push.
+9. If the tests passes on CIs then start building your project.
 
 ## VSCode
 
