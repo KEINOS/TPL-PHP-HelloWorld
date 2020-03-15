@@ -42,6 +42,11 @@ This repo uses the following CIs. On your use, register your repo first and run 
 
 ## How To Run Tests
 
+```shellsession
+$ composer test
+...
+```
+
 ### General
 
 Commit changes and push. Then the CI runs your tests.

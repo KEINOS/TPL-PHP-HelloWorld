@@ -1,4 +1,8 @@
 #!/bin/sh
+# This script installs the below:
+#   - Composer: If not installed.
+#   - Dependencies: Composer packages from "/composer.json".
+#   - Dev-dependencies: If "--dev" option is specified in arg such like "./setup-composer.sh --dev"
 
 # =============================================================================
 #  Functions
@@ -72,7 +76,6 @@ which composer 1>/dev/null
 [ $? -ne 0 ] && {
     echo '- Composer not found.'
     echoTitle 'Installing composer.'
-
     source ./.devcontainer/install_composer.sh
 }
 [ -f ~/.composer/keys.tags.pub ] && [ -f ~/.composer/keys.dev.pub ] || {
@@ -123,7 +126,7 @@ isModeDev $1 && {
         mv -f ./psalm.xml ./test/conf/psalm.xml
     }
 }
-isModeDev $1 || {
+! isModeDev $1 && {
     echoMsg '💡  Installing with NO dev packages'
     composer install --no-dev --no-interaction
     result=$?
