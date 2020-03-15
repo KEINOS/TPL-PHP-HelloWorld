@@ -3,13 +3,13 @@
 
 # Hello-World Class Template
 
-This repo is a template of Hello-World class, which is overly cautious and includes the following tests.
+This repo is an overly cautious template of Hello-World class, which includes the following tests.
 
 ## Tests
 
 - Supported PHP Version to test
   - PHP v7.1.23, 7.1.33, 7.2.27, 7.3.14, 7.4.2(, nightly)
-  - Details see: [.travis.yml](./.travis.yml) and [docker-compose.yml](./docker-compose.yml)
+  - Details see: [.travis.yml](./.travis.yml)
   - Note: The nightly build version fails purposely on TravisCI.
 - Unit Test & Code Coverage
   - [PHPUnit](https://phpunit.de/)
@@ -17,6 +17,8 @@ This repo is a template of Hello-World class, which is overly cautious and inclu
   - [PHPStan](https://github.com/phpstan/phpstan)
   - [PSalm](https://psalm.dev/)
   - [Phan](https://github.com/phan/phan)
+- Tests Over Docker
+  - Details see: [docker-compose.yml](./docker-compose.yml)
 
 ## CIs Used
 
