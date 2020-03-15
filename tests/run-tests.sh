@@ -7,13 +7,13 @@
 function buildContainerTest () {
     echoTitle 'Rebuilding test container'
     isDockerAvailable || {
-        echoMsg '❌  Docker not installed.'
+        echoError '❌  Docker not installed.'
         exit 1
     }
 
     echo '- Building container ...'
     docker-compose build --no-cache test || {
-        echoMsg '❌  Fail to build test container.'
+        echoError '❌  Fail to build test container.'
         exit 1
     }
 }
@@ -26,6 +26,12 @@ function echoHR(){
 function echoInfoVersions () {
     echo '-' $(php --version | head -1)
     echo '-' $(composer --version)
+}
+
+function echoError () {
+    >&2 echoHR '-'
+    >&2 echo "  ${1}"
+    >&2 echoHR '-'
 }
 
 function echoMsg () {
@@ -80,12 +86,15 @@ function isInsideTravis () {
 }
 
 function isInstalledPakcage () {
+    echo -n "- Package: ${1} ... "
     [ -f "./vendor/bin/${1}" ] &&{
         ./vendor/bin/$1 --version 2>/dev/null 1>/dev/null && {
+            echo 'installed'
             return 0
         }
     }
 
+    echo 'NOT FOUND'
     return 1
 }
 
@@ -101,13 +110,21 @@ function isInstalledRequirements () {
     return 1
 }
 
+function isXdebugAvailable () {
+    php --version | grep Xdebug 2>/dev/null 1>/dev/null && {
+        return 0
+    }
+
+    return 1
+}
+
 function removeContainerPrune () {
     echo '- Removing prune container and images ...'
     docker container prune -f 1>/dev/null
     docker image prune -f 1>/dev/null
 }
 
-function runContainerTest () {
+function runTestsInContainer () {
     echoMsg 'Calling test container ...'
     echoTitle 'Running Tests in Container'
     docker-compose run test
@@ -120,11 +137,12 @@ function runContainerTest () {
 # =============================================================================
 
 # Set width
-which tput 2>/dev/null 1>/dev/null && [ -n "${TERM}" ] && {
-    SCREEN_WIDTH=$(tput cols);
-} || {
-    SCREEN_WIDTH=80;
+which tput 2>/dev/null 1>/dev/null && {
+    [ "${TERM:+unknown}" ] && {
+        SCREEN_WIDTH=$(tput cols);
+    }
 }
+SCREEN_WIDTH=${SCREEN_WIDTH:-80};
 
 all_tests_passed=0
 
@@ -139,12 +157,18 @@ cd "$(getPathParent)"
 }
 
 ! [ "${1}" = "local" ] && ! isInsideContainer && {
-    isInstalledRequirements && {
+    isInstalledRequirements 2>/dev/null 1>/dev/null && {
         echoMsg '💡  Requirements all installed in local'
-        echo '- RECOMMEND: Use "composer test local" command for faster testresults.'
+        echo '- RECOMMEND: Use "composer test local" command for faster test results.'
     }
 
-    runContainerTest
+    ! isDockerAvailable && {
+        echoError '❌  ERROR: Docker not installed'
+        echo '- Please install Docker or use "composer test local" option to run the tests locally.'
+        exit 1
+    }
+
+    runTestsInContainer
     result=$?
 
     removeContainerPrune
@@ -161,8 +185,8 @@ cd "$(getPathParent)"
 echoTitle 'Running tests'
 
 isInstalledRequirements || {
-    echoMsg '❌  Missing: composer packages.'
-    echo '- Some packages are missing. Run "composer install"'
+    echoError '❌  Missing: composer packages.'
+    echo '- Required packages for testing missing. Run "composer install" to install them.'
     exit 1
 }
 echo '- Basic requirements of composer installed.'
@@ -172,7 +196,7 @@ composer diagnose
 if [ $? -eq 0 ];
     then echoMsg '✅  Diagnose: passed'
     else {
-        echoMsg '❌  Diagnose: failed'
+        echoError '❌  Diagnose: failed'
         all_tests_passed=1
     }
 fi
@@ -180,6 +204,9 @@ fi
 echoTitle 'TEST: PHPUnit'
 echo '- Removing old reports ...'
 rm -rf ./report/*
+isXdebugAvailable || {
+    echoMsg '💡  Xdebug not found. Code coverage driver will NOT be available. Thus Code Coverage might fail.'
+}
 echo '- Running PHPUnit'
 ./vendor/bin/phpunit \
     --configuration ./tests/conf/phpunit.xml \
@@ -187,7 +214,7 @@ echo '- Running PHPUnit'
 if [ $? -eq 0 ];
     then echoMsg '✅  PHPUnit: passed';
     else {
-        echoMsg '❌  PHPUnit: failed'
+        echoError '❌  PHPUnit: failed'
         all_tests_passed=1
     }
 fi
@@ -197,7 +224,7 @@ echoTitle 'TEST: PHPStan'
 if [ $? -eq 0 ];
     then echoMsg '✅  PHPStan: passed';
     else {
-        echoMsg '❌  PHPStan: failed'
+        echoError '❌  PHPStan: failed'
         all_tests_passed=1
     }
 fi
@@ -211,7 +238,7 @@ echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
 if [ $? -eq 0 ];
     then echoMsg '✅  PSalm: passed';
     else {
-        echoMsg '❌  PSalm: failed'
+        echoError '❌  PSalm: failed'
         all_tests_passed=1
     }
 fi
@@ -224,7 +251,7 @@ PHAN_DISABLE_XDEBUG_WARN=1 \
 if [ $? -eq 0 ];
     then echoMsg '✅  Phan: passed';
     else {
-        echoMsg '❌  Phan: failed'
+        echoError '❌  Phan: failed'
         all_tests_passed=1
     }
 fi
@@ -260,7 +287,7 @@ echoTitle 'TEST: Code Coverage'
         else {
             php -v | grep Xdebug 1>/dev/null 2>/dev/null
             [ $? -eq 0 ] && {
-                echoMsg '❌  COVERALLS: failed'
+                echoError '❌  COVERALLS: failed'
                 echo '- ENV'; env | sort
                 echo '- Other variables'; (set -o posix ; set)
                 all_tests_passed=1
@@ -277,7 +304,7 @@ echoTitle 'TEST: Code Coverage'
 
 if [ $all_tests_passed -eq 0 ];
     then echoTitle '✅  All tests passed.'
-    else echoTitle '❌  Some tests failed.'
+    else >&2 echoTitle '❌  Some tests failed.'
 fi
 
 exit $all_tests_passed
