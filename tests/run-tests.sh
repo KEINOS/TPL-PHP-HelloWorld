@@ -94,7 +94,7 @@ function isInstalledRequirements () {
     isInstalledPakcage phan && \
     isInstalledPakcage php-coveralls && \
     isInstalledPakcage phpstan && \
-    isInstalledPakcage psalm && {
+    isInstalledPakcage psalm.phar && {
         return 0
     }
 
@@ -203,7 +203,7 @@ if [ $? -eq 0 ];
 fi
 
 echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
-./vendor/bin/psalm \
+./vendor/bin/psalm.phar \
     --config=./tests/conf/psalm.xml \
     --root ./src \
     --alter \
