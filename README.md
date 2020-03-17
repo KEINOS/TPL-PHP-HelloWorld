@@ -70,3 +70,9 @@ This repo uses the following CIs. On your use, register your repo first and run 
 If you use Visual Studio Code then you can use "Remote - Containers" extension to develop over Docker container.
 
 Install Microsoft's "Remote - Containers" and "Open Folder in Container" by F1 -> "Remote-Containers".
+
+## Credit
+
+This repo was very much inspired by:
+
+- [このPHPがテンプレートエンジンのくせに慎重すぎる](https://qiita.com/search?utf8=%E2%9C%93&sort=&q=title%3A%E3%81%93%E3%81%AEPHP%E3%81%8C%E3%83%86%E3%83%B3%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%B3%E3%81%AE%E3%81%8F%E3%81%9B%E3%81%AB%E6%85%8E%E9%87%8D%E3%81%99%E3%81%8E%E3%82%8B) @ Qiita
