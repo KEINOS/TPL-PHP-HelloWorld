@@ -3,7 +3,7 @@
 
 # Hello-World Class Template
 
-This repo is an overly cautious template of Hello-World class, which includes the following tests.
+This repo is an overly cautious [Hello-World PHP script](./src/Main.php). Aimed to use it as a template of [composer](https://getcomposer.org/)'s package, which includes the following tests and CIs.
 
 ## Tests
 
@@ -27,9 +27,9 @@ This repo uses the following CIs. On your use, register your repo first and run 
 - [TravisCI](https://travis-ci.org/)
 - [COVERALLS](https://coveralls.io/)
 
-## How To Use The Template
+## How To Use It as A Template
 
-1. Create a new project with [composer](https://getcomposer.org/).
+1. Create a new project from this package using composer. (ex. myNewProject)
 
     ```bash
     composer create-project keinos/hello-world-tpl myNewProject
@@ -47,7 +47,9 @@ This repo uses the following CIs. On your use, register your repo first and run 
     composer test
     ```
 
-3. Create an empty Git repository and commit them.
+3. Change the README.md as it suites your project.
+
+4. Create an empty Git repository and commit them.
 
     ```bash
     git init
@@ -55,15 +57,15 @@ This repo uses the following CIs. On your use, register your repo first and run 
     git commit -m 'initial commit'
     ```
 
-4. Push the repo to GitHub then register it to the following CIs.
+5. Push the repo to GitHub then register it to the following CIs.
     - TravisCI
     - COVERALLS
 
-5. Re-name `ENVFILE.env.sample` to `ENVFILE.env`
-6. Get your access token from COVERALLS' settings and replace the token value in `ENVFILE.env`.
-7. Run tests again to see COVERALLS' function.
-8. If the local test passes then commit changes and push.
-9. If the tests passes on CIs then start building your project.
+6. Re-name `ENVFILE.env.sample` to `ENVFILE.env`
+7. Get your access token from COVERALLS' settings and place/replace the token value in `ENVFILE.env`.
+8. Run tests again to see COVERALLS' function.
+9. If the local test passes then commit changes and push.
+10. If the tests passes on CIs then start building your project.
 
 ## VSCode
 
