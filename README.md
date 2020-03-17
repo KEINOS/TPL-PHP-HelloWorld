@@ -22,7 +22,7 @@ This repo is an overly cautious [Hello-World PHP script](./src/Main.php). Aimed 
 
 ## CIs Used
 
-This repo uses the following CIs. On your use, register your repo first and run the tests before any changes made.
+This repo uses the following CIs. On your use, register your repo first and run the CI tests before any developments are made.
 
 - [TravisCI](https://travis-ci.org/)
 - [COVERALLS](https://coveralls.io/)
@@ -58,20 +58,29 @@ This repo uses the following CIs. On your use, register your repo first and run 
     ```
 
 5. Push the repo to GitHub then register it to the following CIs.
-    - TravisCI
-    - COVERALLS
+    - [TravisCI](https://travis-ci.org/)
+    - [COVERALLS](https://coveralls.io/)
 
 6. Re-name `ENVFILE.env.sample` to `ENVFILE.env`
+
 7. Get your access token from COVERALLS' settings and place/replace the token value in `ENVFILE.env`.
+
 8. Run tests again to see COVERALLS' function.
+
 9. If the local test passes then commit changes and push.
+
 10. If the tests passes on CIs then start building your project.
 
-## VSCode
+## VS Code and Docker User
 
-If you use Visual Studio Code then you can use "Remote - Containers" extension to develop over Docker container.
+If you use Visual Studio Code (a.k.a. VS Code) and have Docker installed, you can use **"Remote - Containers" extension** to develop your project over Docker container.
 
-Install Microsoft's "Remote - Containers" and "Open Folder in Container" by F1 -> "Remote-Containers".
+In this case, you don't need to install the packages or even PHP on your local env.
+
+1. Install Microsoft's ["Remote - Containers"](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension to your VS Code.
+2. `git clone` this repo to your local.
+3. Remove the `.git` directory and initialize as a new one by `git init`.
+4. In VSCode, open the folder in Container by F1 -> "Remote-Containers".
 
 ## Credit
 
