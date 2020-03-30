@@ -118,10 +118,119 @@ function isXdebugAvailable () {
     return 1
 }
 
+function loadConfCoverall () {
+    path_file_conf_coveralls='./tests/conf/COVERALLS.env'
+    if [ -f "${path_file_conf_coveralls}" ];
+        then {
+            # Load Token for COVERALLS
+            source $path_file_conf_coveralls
+            export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
+            export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
+        }
+        else {
+            echo '- Conf file not found at:' $path_file_conf_coveralls
+        }
+    fi
+}
+
 function removeContainerPrune () {
     echo '- Removing prune container and images ...'
     docker container prune -f 1>/dev/null
     docker image prune -f 1>/dev/null
+}
+
+function runCoveralls () {
+    echoTitle 'TEST: Code Coverage'
+    # Check Xdebug extension
+    php -v | grep Xdebug 1>/dev/null 2>/dev/null
+    [ $? -eq 0 ] || {
+        echo '- Xdebug extension is not enabled. Skipping the test.'
+        return 2
+    }
+
+    # Load token from conf files.
+    loadConfCoverall
+
+    # Check token for COVERALLS
+    [ "${COVERALLS_REPO_TOKEN:+notfound}" ] || {
+        echo '- Access token for COVERALLS not set. Skipping the test.'
+        return 2
+    }
+    echo '- Token for COVERALLS found.'
+
+    export COVERALLS_RUN_LOCALLY=1
+    option_dry_run='--dry-run'
+    isInsideTravis && {
+        echo '- Running inside Travis detected.'
+        export TRAVIS=${TRAVIS:-true}
+        export CI_NAME=${CI_NAME:-travis-ci}
+        option_dry_run=
+    }
+    echo '- Running COVERALLS'
+    ./vendor/bin/php-coveralls \
+        --config=./tests/conf/coveralls.yml \
+        --json_path=./report/coveralls-upload.json \
+        --verbose \
+        $option_dry_run \
+        --no-interaction
+    return $?
+}
+
+function runDiagnose () {
+    echoTitle 'DIAGNOSE: composer'
+    composer diagnose
+    return $?
+}
+
+function runPhan () {
+    echoTitle 'TEST: Phan'
+    PHAN_DISABLE_XDEBUG_WARN=1 \
+    ./vendor/bin/phan \
+        --allow-polyfill-parser \
+        --directory ./src
+    return $?
+}
+
+function runPHPStan () {
+    echoTitle 'TEST: PHPStan'
+    ./vendor/bin/phpstan \
+        analyse src --level=max
+    return $?
+}
+
+function runPHPUnit () {
+    echoTitle 'TEST: PHPUnit'
+    echo '- Removing old reports ...'
+    rm -rf ./report/*
+    isXdebugAvailable || {
+        echoMsg '💡  Xdebug not found. Code coverage driver will NOT be available. Thus Code Coverage might fail.'
+    }
+    echo '- Running PHPUnit'
+    ./vendor/bin/phpunit \
+        --configuration ./tests/conf/phpunit.xml \
+        --testdox
+    return $?
+}
+
+function runPsalm () {
+    echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
+    ./vendor/bin/psalm.phar \
+        --config=./tests/conf/psalm.xml \
+        --root ./srcx \
+        --alter \
+        --issues=all
+    return $?
+}
+
+function runTest () {
+    name_test=$1
+    # Run test function given
+    $2;
+    result=$?
+    # Echo results
+    [ $result -eq 0 ] && echoMsg "✅  ${name_test}: passed";
+    [ $result -eq 1 ] && { echoError "❌  ${name_test}: failed"; all_tests_passed=1; };
+    [ $result -eq 2 ] && echoMsg "🛑  ${name_test}: skipped";
 }
 
 function runTestsInContainer () {
@@ -191,116 +300,12 @@ isInstalledRequirements || {
 }
 echo '- Basic requirements of composer installed.'
 
-echoTitle 'DIAGNOSE: composer'
-composer diagnose
-if [ $? -eq 0 ];
-    then echoMsg '✅  Diagnose: passed'
-    else {
-        echoError '❌  Diagnose: failed'
-        all_tests_passed=1
-    }
-fi
-
-echoTitle 'TEST: PHPUnit'
-echo '- Removing old reports ...'
-rm -rf ./report/*
-isXdebugAvailable || {
-    echoMsg '💡  Xdebug not found. Code coverage driver will NOT be available. Thus Code Coverage might fail.'
-}
-echo '- Running PHPUnit'
-./vendor/bin/phpunit \
-    --configuration ./tests/conf/phpunit.xml \
-    --testdox
-if [ $? -eq 0 ];
-    then echoMsg '✅  PHPUnit: passed';
-    else {
-        echoError '❌  PHPUnit: failed'
-        all_tests_passed=1
-    }
-fi
-
-echoTitle 'TEST: PHPStan'
-./vendor/bin/phpstan analyse src --level=max
-if [ $? -eq 0 ];
-    then echoMsg '✅  PHPStan: passed';
-    else {
-        echoError '❌  PHPStan: failed'
-        all_tests_passed=1
-    }
-fi
-
-echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
-./vendor/bin/psalm.phar \
-    --config=./tests/conf/psalm.xml \
-    --root ./src \
-    --alter \
-    --issues=all
-if [ $? -eq 0 ];
-    then echoMsg '✅  PSalm: passed';
-    else {
-        echoError '❌  PSalm: failed'
-        all_tests_passed=1
-    }
-fi
-
-echoTitle 'TEST: Phan'
-PHAN_DISABLE_XDEBUG_WARN=1 \
-./vendor/bin/phan \
-    --allow-polyfill-parser \
-    --directory ./src
-if [ $? -eq 0 ];
-    then echoMsg '✅  Phan: passed';
-    else {
-        echoError '❌  Phan: failed'
-        all_tests_passed=1
-    }
-fi
-
-echoTitle 'TEST: Code Coverage'
-[ -f ./tests/conf/COVERALLS.env ] && {
-    # Load Token for COVERALLS
-    source ./tests/conf/COVERALLS.env
-    export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
-    export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
-}
-[ "${COVERALLS_REPO_TOKEN:+notfound}" ] && {
-    echo '- Token for COVERALLS found.'
-
-    export COVERALLS_RUN_LOCALLY=1
-    option_dry_run='--dry-run'
-    isInsideTravis && {
-        echo '- Running inside Travis detected.'
-        export TRAVIS=${TRAVIS:-true}
-        export CI_NAME=${CI_NAME:-travis-ci}
-        option_dry_run=
-    }
-    ./vendor/bin/php-coveralls \
-        --config=./tests/conf/coveralls.yml \
-        --json_path=./report/coveralls-upload.json \
-        --verbose \
-        $option_dry_run \
-        --no-interaction
-    if [ $? -eq 0 ];
-        then {
-            echoMsg '✅  COVERALLS: finished'
-        };
-        else {
-            php -v | grep Xdebug 1>/dev/null 2>/dev/null
-            [ $? -eq 0 ] && {
-                echoError '❌  COVERALLS: failed'
-                echo '- ENV'; env | sort
-                echo '- Other variables'; (set -o posix ; set)
-                all_tests_passed=1
-            } || {
-                echoMsg '🛑  COVERALLS: SKIP'
-                echo '- Xdebug extension is not enabled.'
-            }
-        }
-    fi
-} || {
-    echoMsg '🛑  COVERALLS: SKIP'
-    echo '- Token not set for COVERALLS.'
-}
+runTest 'Diagnose' runDiagnose
+runTest 'PHPUnit' runPHPUnit
+runTest 'PHPStan' runPHPStan
+runTest 'Psalm' runPsalm
+runTest 'Phan' runPhan
+runTest 'Coveralls' runCoveralls
 
 if [ $all_tests_passed -eq 0 ];
     then echoTitle '✅  All tests passed.'
