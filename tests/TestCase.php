@@ -1,6 +1,6 @@
 <?php
 
-namespace KEINOS\HelloWorld;
+namespace KEINOS\Tests;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
