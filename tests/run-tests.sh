@@ -6,16 +6,43 @@
 
 function buildContainerTest () {
     echoTitle 'Rebuilding test container'
+
+    isInsideContainer && {
+        echoError '❌  Running inside container. Docker in docker not supported.'
+        exit 1
+    }
+
     isDockerAvailable || {
         echoError '❌  Docker not installed.'
         exit 1
     }
 
     echo '- Building container ...'
-    docker-compose build --no-cache test || {
+    docker-compose build --no-cache $name_service_test || {
         echoError '❌  Fail to build test container.'
         exit 1
     }
+}
+
+function echoAlert () {
+    echoHR '-'
+    echo "💡  ${1}"
+    echoHR '-'
+}
+
+function echoError () {
+    >&2 echoHR '-'
+    >&2 echo "  ${1}"
+    >&2 echoHR '-'
+}
+
+function echoFlagOptions () {
+    echo 'requirement diagnose phpunit phpstan psalm phan coveralls'
+}
+
+function echoHelpOption () {
+    echo '- Available Option Flags:'
+    echo "    $(echoFlagOptions) (To test all use: all)"
 }
 
 function echoHR(){
@@ -26,12 +53,6 @@ function echoHR(){
 function echoInfoVersions () {
     echo '-' $(php --version | head -1)
     echo '-' $(composer --version)
-}
-
-function echoError () {
-    >&2 echoHR '-'
-    >&2 echo "  ${1}"
-    >&2 echoHR '-'
 }
 
 function echoMsg () {
@@ -48,11 +69,11 @@ function echoTitle () {
 }
 
 function getPathParent () {
-    echo "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
+    echo "$(dirname "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)")"
 }
 
 function getPathScript () {
-    echo "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    echo "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)"
 }
 
 function isDockerAvailable () {
@@ -63,14 +84,20 @@ function isDockerAvailable () {
     return 1
 }
 
+function isFlagSet () {
+    option=$(tr '[A-Z]' '[a-z]' <<< "$1")
+    echo "${list_option_given}" | grep $option 2>/dev/null 1>/dev/null
+    return $?
+}
+
 function isInsideContainer () {
     isInsideTravis && {
-        echoMsg '💡  You are running inside TravisCI.'
+        echoAlert 'You are running inside TravisCI.'
         return 0
     }
 
     [ -f /.dockerenv ] && {
-        echoMsg '💡  You are running inside Docker container.'
+        echoAlert 'You are running inside Docker container.'
         return 0
     }
 
@@ -87,7 +114,7 @@ function isInsideTravis () {
 
 function isInstalledPakcage () {
     echo -n "- Package: ${1} ... "
-    [ -f "./vendor/bin/${1}" ] &&{
+    [ -f "./vendor/bin/${1}" ] && {
         ./vendor/bin/$1 --version 2>/dev/null 1>/dev/null && {
             echo 'installed'
             return 0
@@ -141,6 +168,10 @@ function removeContainerPrune () {
 
 function runCoveralls () {
     echoTitle 'TEST: Code Coverage'
+    # Skip if option not set
+    ! isFlagSet 'coveralls' && {
+        return 2
+    }
     # Check Xdebug extension
     php -v | grep Xdebug 1>/dev/null 2>/dev/null
     [ $? -eq 0 ] || {
@@ -158,32 +189,34 @@ function runCoveralls () {
     }
     echo '- Token for COVERALLS found.'
 
-    export COVERALLS_RUN_LOCALLY=1
-    option_dry_run='--dry-run'
-    isInsideTravis && {
-        echo '- Running inside Travis detected.'
-        export TRAVIS=${TRAVIS:-true}
-        export CI_NAME=${CI_NAME:-travis-ci}
-        option_dry_run=
-    }
+    setOptionCoverallsDryRun
+
     echo '- Running COVERALLS'
     ./vendor/bin/php-coveralls \
         --config=./tests/conf/coveralls.yml \
         --json_path=./report/coveralls-upload.json \
         --verbose \
-        $option_dry_run \
-        --no-interaction
+        --no-interaction \
+        $option_dry_run
     return $?
 }
 
 function runDiagnose () {
     echoTitle 'DIAGNOSE: composer'
+    # Skip if option not set
+    ! isFlagSet 'diagnose' && {
+        return 2
+    }
     composer diagnose
     return $?
 }
 
 function runPhan () {
     echoTitle 'TEST: Phan'
+    # Skip if option not set
+    ! isFlagSet 'phan' && {
+        return 2
+    }
     PHAN_DISABLE_XDEBUG_WARN=1 \
     ./vendor/bin/phan \
         --allow-polyfill-parser \
@@ -193,6 +226,10 @@ function runPhan () {
 
 function runPHPStan () {
     echoTitle 'TEST: PHPStan'
+    # Skip if option not set
+    ! isFlagSet 'phpstan' && {
+        return 2
+    }
     ./vendor/bin/phpstan \
         analyse src --level=max
     return $?
@@ -200,26 +237,53 @@ function runPHPStan () {
 
 function runPHPUnit () {
     echoTitle 'TEST: PHPUnit'
+    # Skip if option not set
+    ! isFlagSet 'phpunit' && {
+        return 2
+    }
     echo '- Removing old reports ...'
     rm -rf ./report/*
     isXdebugAvailable || {
-        echoMsg '💡  Xdebug not found. Code coverage driver will NOT be available. Thus Code Coverage might fail.'
+        echoAlert 'Xdebug not found. Code coverage driver will NOT be available. Thus Code Coverage might fail.'
     }
+    setOptionPHPUnitTestdox
     echo '- Running PHPUnit'
     ./vendor/bin/phpunit \
         --configuration ./tests/conf/phpunit.xml \
-        --testdox
+        $option_testdox
     return $?
 }
 
 function runPsalm () {
     echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
+    # Skip if option not set
+    ! isFlagSet 'psalm' && {
+        return 2
+    }
     ./vendor/bin/psalm.phar \
         --config=./tests/conf/psalm.xml \
-        --root ./srcx \
+        --root ./src \
         --alter \
         --issues=all
     return $?
+}
+
+function runRequirementCheck () {
+    echoTitle 'CHECK: Requirement check for tests'
+
+    # Skip if option not set
+    ! isFlagSet 'require' && {
+        return 2
+    }
+
+    isInstalledRequirements || {
+        echoError '❌  Missing: composer packages.'
+        echo '- Required packages for testing missing. Run "composer install" to install them.'
+        exit 1
+    }
+
+    echo 'Basic requirements of composer installed.'
+    return 0
 }
 
 function runTest () {
@@ -236,38 +300,94 @@ function runTest () {
 function runTestsInContainer () {
     echoMsg 'Calling test container ...'
     echoTitle 'Running Tests in Container'
-    docker-compose run test
+    docker-compose run -e SCREEN_WIDTH=$SCREEN_WIDTH $name_service_test "${@}"
 
     return $?
+}
+
+function setFlagsTestAllUp () {
+    list_option_given=$(echoFlagOptions)
+}
+
+function setOptionCoverallsDryRun () {
+    export COVERALLS_RUN_LOCALLY=1
+    option_dry_run='--dry-run'
+    isInsideTravis && {
+        echo '- Running inside Travis detected.'
+        export TRAVIS=${TRAVIS:-true}
+        export CI_NAME=${CI_NAME:-travis-ci}
+        option_dry_run=
+    }
+}
+
+function setOptionPHPUnitTestdox () {
+    option_testdox=''
+    [ ${mode_verbose} -eq 0 ] && {
+        option_testdox='--testdox'
+    }
 }
 
 # =============================================================================
 #  Setup
 # =============================================================================
+# Name of service container in docker-compose.
+#   See: ../docker-compose.yml
+name_service_test='test'
 
 # Set width
-which tput 2>/dev/null 1>/dev/null && {
-    [ "${TERM:+unknown}" ] && {
-        SCREEN_WIDTH=$(tput cols);
-    }
+$(tput cols 2>/dev/null 1>/dev/null) && {
+    SCREEN_WIDTH=$(tput cols);
 }
 SCREEN_WIDTH=${SCREEN_WIDTH:-80};
-
-all_tests_passed=0
 
 # Moving to script's parent directory.
 cd "$(getPathParent)"
 
-# =============================================================================
-#  RUN Tests on local (Recall this script via Docker)
-# =============================================================================
-[ "${1}" = "build" ] && {
+# Set all options/args given to this script in lower case
+list_option_given=$(tr '[A-Z]' '[a-z]' <<< "$@")
+
+# Set initial result flag
+#   0    -> All tests passed
+#   else -> Some tests failed
+all_tests_passed=0
+
+# -----------------------------------------------------------------------------
+#  Flag Option Setting
+# -----------------------------------------------------------------------------
+isFlagSet 'build' && {
     buildContainerTest
+    exit $?
 }
 
-! [ "${1}" = "local" ] && ! isInsideContainer && {
+# Set verbose mode flag
+#   0    -> yes
+#   else -> no
+mode_verbose=1
+isFlagSet 'verbose' && {
+    mode_verbose=0
+} || {
+    echoAlert 'For detailed output use option: verbose'
+}
+
+# Set default(minimum) test
+list_option_given="${list_option_given} phpunit"
+
+[ ${#} -eq 0 ] && {
+    echoAlert '[NO option specified]: Running only PHPUnit'
+    echoHelpOption
+}
+
+isFlagSet 'all' && {
+    echoAlert '[Full option specified]: Running all tests'
+    setFlagsTestAllUp #Up all the test flags
+}
+
+# =============================================================================
+#  Run this script via container if "local" option NOT specified
+# =============================================================================
+! isFlagSet 'local' && ! isInsideContainer && {
     isInstalledRequirements 2>/dev/null 1>/dev/null && {
-        echoMsg '💡  Requirements all installed in local'
+        echoAlert 'Requirements all installed in local'
         echo '- RECOMMEND: Use "composer test local" command for faster test results.'
     }
 
@@ -277,7 +397,7 @@ cd "$(getPathParent)"
         exit 1
     }
 
-    runTestsInContainer
+    runTestsInContainer "${@}"
     result=$?
 
     removeContainerPrune
@@ -285,21 +405,11 @@ cd "$(getPathParent)"
 }
 
 # =============================================================================
-#  RUN Tests on Container (Actual Tests)
-# =============================================================================
-# -----------------------------------------------------------------------------
 #  Main
-# -----------------------------------------------------------------------------
+# =============================================================================
+#  Run the actual tests.
 
-echoTitle 'Running tests'
-
-isInstalledRequirements || {
-    echoError '❌  Missing: composer packages.'
-    echo '- Required packages for testing missing. Run "composer install" to install them.'
-    exit 1
-}
-echo '- Basic requirements of composer installed.'
-
+runTest 'Check Requirements' runRequirementCheck
 runTest 'Diagnose' runDiagnose
 runTest 'PHPUnit' runPHPUnit
 runTest 'PHPStan' runPHPStan
