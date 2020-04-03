@@ -1,5 +1,5 @@
 # To build this container you need to call it from the parent directory.
-# See ../docker-comose.yml
+#   See: ../docker-comose.yml
 ARG NAME_IMAGE=php:cli-alpine
 ARG COVERALLS_RUN_LOCALLY=1
 ARG COVERALLS_REPO_TOKEN
@@ -9,8 +9,8 @@ FROM ${NAME_IMAGE}
 USER root
 
 COPY ./.devcontainer/install_composer.sh /app/.devcontainer/install_composer.sh
-COPY ./setup-composer.sh /app/setup-composer.sh
 COPY ./composer.json /app/composer.json
+COPY ./init /app/init
 COPY ./src /app/src
 COPY ./tests /app/tests
 
@@ -30,6 +30,7 @@ RUN apk --no-cache add \
     && docker-php-ext-enable \
         xdebug \
         ast \
-    && /app/setup-composer.sh --dev
+    && /app/init/setup-composer.sh --dev \
+    && rm -rf /app/init
 
 ENTRYPOINT [ "/app/tests/run-tests.sh" ]

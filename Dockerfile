@@ -4,14 +4,17 @@ FROM php:7.4.2-cli-alpine
 
 COPY ./src /app/src
 COPY ./composer.json /app/composer.json
+COPY ./init /app/init
 COPY ./.devcontainer/install_composer.sh /app/install_composer.sh
 
 # Install composer
 WORKDIR /app
 USER root
 RUN \
-    /app/setup-composer.sh && \
-    composer install --no-dev --no-interaction
+    /app/install_composer.sh && \
+    /app/init/setup-composer.sh && \
+    composer install --no-dev --no-interaction && \
+    rm -f /app/install_composer.sh
 
 WORKDIR /app/src
 USER root
