@@ -42,7 +42,10 @@ function isPHP8 () {
 #  Settings
 # =============================================================================
 
-cd $(cd $(dirname $0); pwd)
+# Move to parent directory
+PATH_DIR_SCRIPT=$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)
+PATH_DIR_PARENT=$(dirname "$PATH_DIR_SCRIPT")
+cd "$PATH_DIR_PARENT"
 
 # Set width
 if [ -n "${TERM}" ];

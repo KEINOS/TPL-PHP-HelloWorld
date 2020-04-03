@@ -1,9 +1,11 @@
 [![Build Status](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld.svg?branch=master)](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld/builds)
 [![Coverage Status](https://coveralls.io/repos/github/KEINOS/TPL-PHP-HelloWorld/badge.svg)](https://coveralls.io/github/KEINOS/TPL-PHP-HelloWorld)
 
-# Hello-World Class Template
+# Super cautious "Hello-World" composer boilerplate
 
-This repo is an overly cautious [Hello-World PHP script](./src/Main.php). Aimed to use it as a template of [composer](https://getcomposer.org/)'s package, which includes the following tests and CIs.
+This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just "Hello-World!".
+
+Aimed to use it as a template/boilerplate of [composer](https://getcomposer.org/)'s package, though.
 
 ## Tests
 
