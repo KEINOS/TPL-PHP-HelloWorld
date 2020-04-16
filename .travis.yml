@@ -30,4 +30,11 @@ jobs:
     - php: nightly
 
 after_success:
-  - ./vendor/bin/php-coveralls -v --config=./tests/conf/coveralls.yml --coverage_clover=./report/clover.xml --json_path=./report/coveralls-upload.json
+  - export CI_BUILD_NUMBER="$TRAVIS_BUILD_NUMBER"; \
+    export CI_PULL_REQUEST="$TRAVIS_PULL_REQUEST"; \
+    export CI_BRANCH="$TRAVIS_BRANCH"; \
+    ./vendor/bin/php-coveralls \
+      -v \
+      --config=./tests/conf/coveralls.yml \
+      --coverage_clover=./report/clover.xml \
+      --json_path=./report/coveralls-upload.json
