@@ -23,7 +23,7 @@ php:
   # latest version of PHP (PHP 8.0.0-dev)
   - nightly
 
-script: /bin/bash ./tests/run-tests.sh
+script: /bin/bash ./tests/run-tests.sh all
 
 jobs:
   allow_failures:
