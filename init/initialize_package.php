@@ -73,9 +73,9 @@ try{
     foreach ($list_path_file_replace as $path_file_current) {
         // Rewrite contents
         if (is_file($path_file_current)) {
-            echo 'Now renaming ... ' . $path_file_current . PHP_EOL;
+            echo 'Now renaming contents... ';
             // Rewrite contents
-            rewriteFileContents($path_file_current, $list_before_after)
+            rewriteFileContents($path_file_current, $list_before_after);
         }
 
         // Rewrite file name
@@ -256,10 +256,13 @@ function rewriteFileContents(string $path_file, array $list_before_after)
     }
 
     if ($flag_needs_save === true) {
-        $result = file_put_contents($path_file, $tmp_data, LOCK_EX);
+        $result = \file_put_contents($path_file, $tmp_data, LOCK_EX);
         if ($result === false) {
             throw new \RuntimeException('Fail to save/overwrite data to file:' . $path_file);
         }
+        echo 'OK ... ' . $path_file . PHP_EOL;
+    } else {
+        echo 'SKIP ... ' . $path_file . PHP_EOL;
     }
 }
 
@@ -271,16 +274,16 @@ function rewriteFileName($path_file_from, $name_file_from, $name_file_to)
         return false;
     }
     // New path to re-write
-    $name_file_new = str_replace($name_file_from, $name_file_to, $path_file_from);
+    $name_file_new = str_replace($name_file_from, $name_file_to, $name_file_target);
     $path_file_new = dirname($path_file_from) . DIR_SEP . $name_file_new;
 
     // Rename!
-    $result = rename($path_file_current, $path_file_new);
+    $result = rename($path_file_from, $path_file_new);
     if ($result === false) {
         throw new \RuntimeException(
             'Fail to change file name.' . PHP_EOL .
-            '- Original file path: ' . $path_file . PHP_EOL .
-            '- Name to be replaces: ' . $name_pkg_to . PHP_EOL
+            '- Original file path: ' . $path_file_from . PHP_EOL .
+            '- Name to be replaces: ' . $name_file_to . PHP_EOL
         );
     }
 }
