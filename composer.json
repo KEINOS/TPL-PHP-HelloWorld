@@ -65,7 +65,9 @@
             "./tests/run-tests.sh"
         ],
         "post-create-project-cmd": [
-            "/bin/sh <(cat 'init/initialize_package.php')"
+            "echo '----------------------------------------------------------------------------'",
+            "echo ' IMPORTANT: Initialize the template running \"./init/initialize_package.php\"'",
+            "echo '----------------------------------------------------------------------------'"
         ]
     }
 }

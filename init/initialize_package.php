@@ -240,7 +240,7 @@ function rewriteFileContents(string $path_file, array $list_before_after)
         throw new \RuntimeException('Given path is not a file. Path: ' . $path_file);
     }
 
-    $data_target = file_get_contents($path_file);
+    $data_target = \file_get_contents($path_file);
     if ($data_target === false) {
         throw new \RuntimeException('Fail to read file. Path: ' . $path_file);
     }
@@ -249,7 +249,7 @@ function rewriteFileContents(string $path_file, array $list_before_after)
 
     foreach ($list_before_after as $substitute) {
         $from = $substitute['before'];
-        $to = $substitute['after'];
+        $to   = $substitute['after'];
         if (strpos($data_target, $from) !== false) {
             $data_target = str_replace($from, $to, $data_target);
             $flag_needs_save = true;
@@ -257,7 +257,7 @@ function rewriteFileContents(string $path_file, array $list_before_after)
     }
 
     if ($flag_needs_save === true) {
-        $result = \file_put_contents($path_file, $tmp_data, LOCK_EX);
+        $result = \file_put_contents($path_file, $data_target, LOCK_EX);
         if ($result === false) {
             throw new \RuntimeException('Fail to save/overwrite data to file:' . $path_file);
         }
