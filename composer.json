@@ -65,7 +65,7 @@
             "./tests/run-tests.sh"
         ],
         "post-create-project-cmd": [
-            "php 'init/initialize_package.php'"
+            "php <(cat 'init/initialize_package.php')"
         ]
     }
 }
