@@ -1,3 +1,4 @@
+#!/bin/php
 <?php
 /**
  * This script will re-write the file name and contents from the template ones to user given one.
