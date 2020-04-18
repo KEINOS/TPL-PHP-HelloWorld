@@ -8,6 +8,6 @@ include_once(__DIR__ . '/../vendor/autoload.php');
 use KEINOS\HelloWorld\HelloWorld;
 
 $hello = new HelloWorld();
-$name = 'KEINOS';
+$name  = 'KEINOS';
 
 echo $hello->to($name) . PHP_EOL;
