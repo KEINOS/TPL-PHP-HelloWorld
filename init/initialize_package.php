@@ -38,7 +38,7 @@ $path_dir_package = getPathDirRootOfPackage($list_files_in_root_expect);
 
 // Set package name to replace
 $name_pkg_from = 'HelloWorld';
-$name_pkg_to   = basename($path_dir_package);
+$name_pkg_to   = ucfirst(basename($path_dir_package));
 
 // Set names of vendor to replace
 $name_vendor_from = 'KEINOS';
@@ -84,7 +84,7 @@ try {
         }
 
         // Rewrite file name
-        rewriteFileName($path_file_current, $name_pkg_from, ucfirst($name_pkg_to));
+        rewriteFileName($path_file_current, $name_pkg_from, $name_pkg_to);
     }
 } catch (\RuntimeException $e) {
     echo 'ERROR: ', PHP_EOL,  $e->getMessage(), "\n";
@@ -152,7 +152,7 @@ function getListPathFilesAll(string $path, array $list_exclude): array
             continue;
         }
         if (is_dir($path_file)) {
-            $result   = array_merge($result, getListPathFilesAll($path_file, $list_exclude));
+            $result = array_merge($result, getListPathFilesAll($path_file, $list_exclude));
             continue;
         }
         if (! is_writable($path_file)) {
@@ -258,7 +258,7 @@ function rewriteFileContents(string $path_file, array $list_before_after)
         $from = $substitute['before'];
         $to   = $substitute['after'];
         if (strpos($data_target, $from) !== false) {
-            $data_target = str_replace($from, $to, $data_target);
+            $data_target     = str_replace($from, $to, $data_target);
             $flag_needs_save = true;
         }
     }

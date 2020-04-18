@@ -37,13 +37,12 @@ Telling the truth, it was aimed to use it as a template/boilerplate of [composer
 
     ```bash
     composer create-project keinos/hello-world-tpl myNewProject
-    mv myNewProject
+    cd myNewProject
     ```
 
 2. Run the script below, which will re-write the package and vendor names in the scripts.(Ex. KEINOS)
 
     ```bash
-    cd myNewProject
     ./init/initialize_package.php KEINOS
     ```
 
