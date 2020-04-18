@@ -8,15 +8,11 @@ FROM ${NAME_IMAGE}
 
 USER root
 
-COPY ./.devcontainer/install_composer.sh /app/.devcontainer/install_composer.sh
-COPY ./composer.json /app/composer.json
-COPY ./init /app/init
-COPY ./src /app/src
-COPY ./tests /app/tests
+COPY . /app
 
 ENV COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
 WORKDIR /app
-RUN apk --no-cache add \
+RUN apk --no-cache --update add \
         bash \
         git \
         autoconf \

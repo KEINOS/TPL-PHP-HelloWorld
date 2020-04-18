@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld.svg?branch=master)](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld/builds)
 [![Coverage Status](https://coveralls.io/repos/github/KEINOS/TPL-PHP-HelloWorld/badge.svg)](https://coveralls.io/github/KEINOS/TPL-PHP-HelloWorld)
 
-# Super cautious "Hello-World" composer boilerplate
+# Super cautious "Hello-World"
 
-This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just "Hello-World!".
+This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just say "Hello-World!".
 
 Aimed to use it as a template/boilerplate of [composer](https://getcomposer.org/)'s package, though.
 
@@ -29,7 +29,9 @@ This repo uses the following CIs. On your use, register your repo first and run 
 - [TravisCI](https://travis-ci.org/)
 - [COVERALLS](https://coveralls.io/)
 
-## How To Use It as A Template
+# Using this package as a boilerplate
+
+## How to user it as a template
 
 1. Create a new project from this package using composer. (ex. myNewProject)
 
@@ -38,7 +40,13 @@ This repo uses the following CIs. On your use, register your repo first and run 
     mv myNewProject
     ```
 
-2. Run the tests to check it's basic test functionality.
+2. Run the script below, which re-writes the package and vendor name.
+
+    ```bash
+    ./init/initialize_package.php yourVendorName
+    ```
+
+3. Before anything, run the tests to check it's basic test functionality.
 
     ```bash
     composer test local
@@ -48,8 +56,6 @@ This repo uses the following CIs. On your use, register your repo first and run 
     # For Docker users
     composer test
     ```
-
-3. Change the README.md as it suites your project.
 
 4. Create an empty Git repository and commit them.
 
