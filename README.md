@@ -5,8 +5,6 @@
 
 This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just say "Hello-World!".
 
-Aimed to use it as a template/boilerplate of [composer](https://getcomposer.org/)'s package, though.
-
 ## Tests
 
 - Supported PHP Version to test
@@ -29,32 +27,35 @@ This repo uses the following CIs. On your use, register your repo first and run 
 - [TravisCI](https://travis-ci.org/)
 - [COVERALLS](https://coveralls.io/)
 
-# Using this package as a boilerplate
+# Using this package as a template/boilerplate
+
+Telling the truth, it was aimed to use it as a template/boilerplate of [composer](https://getcomposer.org/)'s package.
 
 ## How to user it as a template
 
-1. Create a new project from this package using composer. (ex. myNewProject)
+1. Create a new project from this package using composer. (Ex. myNewProject)
 
     ```bash
     composer create-project keinos/hello-world-tpl myNewProject
     mv myNewProject
     ```
 
-2. Run the script below, which re-writes the package and vendor name.
+2. Run the script below, which will re-write the package and vendor names in the scripts.(Ex. KEINOS)
 
     ```bash
-    ./init/initialize_package.php yourVendorName
+    cd myNewProject
+    ./init/initialize_package.php KEINOS
     ```
 
 3. Before anything, run the tests to check it's basic test functionality.
 
     ```bash
-    composer test local
+    composer test local all
     ```
 
     ```bash
     # For Docker users
-    composer test
+    composer test all
     ```
 
 4. Create an empty Git repository and commit them.

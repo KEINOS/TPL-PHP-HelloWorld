@@ -63,11 +63,6 @@
     "scripts" :{
         "test": [
             "./tests/run-tests.sh"
-        ],
-        "post-create-project-cmd": [
-            "/bin/echo \"-------------------------------------------------------------------------------\"",
-            "/bin/echo \" IMPORTANT: Initialize the template by running './init/initialize_package.php'\"",
-            "/bin/echo \"-------------------------------------------------------------------------------\""
         ]
     }
 }

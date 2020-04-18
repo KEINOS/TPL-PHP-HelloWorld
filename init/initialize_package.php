@@ -44,6 +44,10 @@ $name_pkg_to   = basename($path_dir_package);
 $name_vendor_from = 'KEINOS';
 $name_vendor_to   = getNameVendor(); // Get or ask user the name of vendor
 
+// Set namespace
+$namespace_from = "${name_vendor_from}/${name_pkg_from}";
+$namespace_to   = "${name_vendor_to}/${name_pkg_to}";
+
 // List of files and dirs to exclude when renaming
 $list_exclude_file = [
     basename(__FILE__),
@@ -70,7 +74,7 @@ $list_before_after = [
 // Get only files
 $list_path_file_replace = getListPathFilesAll($path_dir_package, $list_exclude_file);
 
-try{
+try {
     foreach ($list_path_file_replace as $path_file_current) {
         // Rewrite contents
         if (is_file($path_file_current)) {
@@ -80,9 +84,9 @@ try{
         }
 
         // Rewrite file name
-        rewriteFileName($path_file_current, $name_pkg_from, $name_pkg_to);
+        rewriteFileName($path_file_current, $name_pkg_from, ucfirst($name_pkg_to));
     }
-}catch (\RuntimeException $e) {
+} catch (\RuntimeException $e) {
     echo 'ERROR: ', PHP_EOL,  $e->getMessage(), "\n";
 }
 
@@ -240,12 +244,15 @@ function rewriteFileContents(string $path_file, array $list_before_after)
         throw new \RuntimeException('Given path is not a file. Path: ' . $path_file);
     }
 
-    $data_target = \file_get_contents($path_file);
-    if ($data_target === false) {
+    $data_original = \file_get_contents($path_file);
+    if ($data_original === false) {
         throw new \RuntimeException('Fail to read file. Path: ' . $path_file);
     }
 
     $flag_needs_save = false;
+
+    $data_target     = rewriteNameSpace($data_original);
+    $flag_needs_save = ($data_target !== $data_original);
 
     foreach ($list_before_after as $substitute) {
         $from = $substitute['before'];
@@ -287,4 +294,11 @@ function rewriteFileName($path_file_from, $name_file_from, $name_file_to)
             '- Name to be replaces: ' . $name_file_to . PHP_EOL
         );
     }
+}
+
+function rewriteNameSpace($script)
+{
+    global $namespace_from, $namespace_to;
+
+    return str_replace($namespace_from, $namespace_to, $script);
 }

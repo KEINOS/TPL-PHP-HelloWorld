@@ -19,7 +19,6 @@ RUN apk --no-cache --update add \
         build-base \
         wget \
         zip unzip \
-        ncurses \
     && pecl install \
         xdebug \
         ast-1.0.6 \

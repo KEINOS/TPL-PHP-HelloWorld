@@ -7,7 +7,7 @@ use \KEINOS\Tests\TestCase;
 
 final class ClassHelloWorldTest extends TestCase
 {
-    public function testHelloWorld()
+    public function testRegularInput()
     {
         $subject = new HelloWorld();
 
@@ -16,7 +16,7 @@ final class ClassHelloWorldTest extends TestCase
         echo $subject->to('World');
     }
 
-    public function testHelloMiku()
+    public function testAnotherInput()
     {
         $subject = new HelloWorld();
 
