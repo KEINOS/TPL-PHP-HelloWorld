@@ -86,6 +86,12 @@ try {
         // Rewrite file name
         rewriteFileName($path_file_current, $name_pkg_from, $name_pkg_to);
     }
+
+    $last_line = exec('composer bump-autoload', $output, $return_var);
+    if ($return_var !== 0) {
+        $msg_error = implode(PHP_EOL, $output);
+        throw new \RuntimeException($msg_error);
+    }
 } catch (\RuntimeException $e) {
     echo 'ERROR: ', PHP_EOL,  $e->getMessage(), "\n";
 }
