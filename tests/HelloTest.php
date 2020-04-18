@@ -5,11 +5,11 @@ namespace KEINOS\HelloWorld;
 
 use \KEINOS\Tests\TestCase;
 
-final class ClassHelloWorldTest extends TestCase
+final class ClassHelloTest extends TestCase
 {
     public function testRegularInput()
     {
-        $subject = new HelloWorld();
+        $subject = new Hello();
 
         $expect = 'Hello, World!';
         $this->expectOutputString($expect);
@@ -18,7 +18,7 @@ final class ClassHelloWorldTest extends TestCase
 
     public function testAnotherInput()
     {
-        $subject = new HelloWorld();
+        $subject = new Hello();
 
         $expect = 'Hello, Miku!';
         $this->expectOutputString($expect);
