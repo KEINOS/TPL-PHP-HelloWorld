@@ -1,0 +1,20 @@
+{
+    "base-path": "./",
+    "main": "./src/Main.php",
+    "blacklist": [
+        ".devcontainer",
+        ".testcontainer",
+        ".vscode",
+        ".init",
+        "report",
+        "tests",
+        ".dockerignore",
+        ".gitattributes",
+        ".gitignore",
+        ".travis.yml",
+        "docker-compose.yml",
+        "Dockerfile"
+    ],
+    "output": "Sample.phar",
+    "force-autodiscovery": true
+}

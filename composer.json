@@ -63,6 +63,9 @@
     "scripts" :{
         "test": [
             "./tests/run-tests.sh"
+        ],
+        "build": [
+            "box compile --config=./.init/box.json"
         ]
     }
 }
