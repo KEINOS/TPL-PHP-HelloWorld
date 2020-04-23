@@ -26,6 +26,7 @@
         "issues": "https://github.com/KEINOS/Dockerfile_of_Alpine/issues",
         "source": "https://github.com/KEINOS/TPL-PHP-HelloWorld"
     },
+    "bin": ["bin/HelloWorld"],
     "require": {
         "php": "^8.0.0 || ^7.0",
         "ext-mbstring": "*"
@@ -66,6 +67,9 @@
         ],
         "build": [
             "box compile --config=./.init/box.json"
+        ],
+        "dev": [
+            "docker-compose run --rm --workdir='/app' -v $(pwd):/app dev"
         ]
     }
 }

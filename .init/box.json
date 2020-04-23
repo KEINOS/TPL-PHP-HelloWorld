@@ -15,6 +15,6 @@
         "docker-compose.yml",
         "Dockerfile"
     ],
-    "output": "Sample.phar",
+    "output": "./bin/HelloWorld",
     "force-autodiscovery": true
 }

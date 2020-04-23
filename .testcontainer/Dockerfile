@@ -25,7 +25,6 @@ RUN apk --no-cache --update add \
     && docker-php-ext-enable \
         xdebug \
         ast \
-    && /app/init/setup-composer.sh --dev \
-    && rm -rf /app/init
+    && /app/.init/setup-composer.sh --dev
 
 ENTRYPOINT [ "/app/tests/run-tests.sh" ]

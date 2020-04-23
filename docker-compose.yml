@@ -12,7 +12,18 @@ services:
     environment:
       - COVERALLS_REPO_TOKEN
     volumes:
+      - ./composer.json:/app/composer.json
       - ./.git/:/app/.git
       - ./src:/app/src
       - ./tests:/app/tests
       - ./report:/app/report
+      - ./bin:/app/bin
+  dev:
+    build:
+      context: .
+      dockerfile: ./.devcontainer/Dockerfile
+    image: dev_php/local
+    environment:
+      - COVERALLS_REPO_TOKEN
+    volumes:
+      - .:/app

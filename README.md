@@ -29,21 +29,37 @@ This repo uses the following CIs. On your use, register your repo first and run 
 
 # Using this package as a template/boilerplate
 
-Telling the truth, it was aimed to use it as a template/boilerplate of [composer](https://getcomposer.org/)'s package.
+<details><summary>How to</summary><div><br>
 
-## How to user it as a template
+## How to use it as a template
 
-1. Create a new project from this package using composer. (Ex. myNewProject)
+1. Choose one of the below command that suits you, to create a new project following your project name. (Ex. MyNewProject)
 
     ```bash
-    composer create-project keinos/hello-world-tpl myNewProject
-    cd myNewProject
+    # For composer user (No Docker)
+    composer create-project keinos/hello-world-tpl MyNewProject
+    cd MyNewProject
     ```
 
-2. Run the script below, which will re-write the package and vendor names in the scripts.(Ex. KEINOS)
+    ```bash
+    # For composer and Docker user
+    composer create-project --no-dev keinos/hello-world-tpl MyNewProject
+    cd MyNewProject
+    ```
 
     ```bash
-    ./init/initialize_package.php KEINOS
+    # For Docker and docker-compose user (No PHP nor composer user)
+    git clone https://github.com/KEINOS/TPL-PHP-HelloWorld.git MyNewProject
+    cd MyNewProject
+    rm -rf .git
+    ```
+
+    **Note** that the project name provided (the "MyNewProject" above) will be the package name and the namespace such as "MyVendorName/MyNewProject".
+
+2. Run the script below, which will re-write the package and vendor names to the provided name. (Ex. MyVendorName)
+
+    ```bash
+    ./.init/initialize_package.php MyVendorName
     ```
 
 3. Before anything, run the tests to check it's basic test functionality.
@@ -79,6 +95,11 @@ Telling the truth, it was aimed to use it as a template/boilerplate of [composer
 
 10. If the tests passes on CIs then start building your project.
 
+## Developing via Docker
+
+This repo can be develop via Docker.
+
+
 ## VS Code and Docker User
 
 If you use Visual Studio Code (a.k.a. VS Code) and have Docker installed, you can use **"Remote - Containers" extension** to develop your project over Docker container.
@@ -89,6 +110,8 @@ In this case, you don't need to install the packages or even PHP on your local e
 2. `git clone` this repo to your local.
 3. Remove the `.git` directory and initialize as a new one by `git init`.
 4. In VSCode, open the folder in Container by F1 -> "Remote-Containers".
+
+</div></details>
 
 ## Credit
 
