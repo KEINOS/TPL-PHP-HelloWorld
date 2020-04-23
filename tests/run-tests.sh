@@ -56,7 +56,7 @@ function echoInfoVersions () {
 }
 
 function echoMsg () {
-    echoHR '-'
+    echo
     echo "  ${1}"
     echoHR '-'
 }
@@ -85,7 +85,7 @@ function isDockerAvailable () {
 }
 
 function isFlagSet () {
-    option=$(tr '[A-Z]' '[a-z]' <<< "$1")
+    option=$(tr '[A-Z]' '[a-z]' <<< "${1}")
     echo "${list_option_given}" | grep $option 2>/dev/null 1>/dev/null
     return $?
 }
@@ -298,15 +298,17 @@ function runTest () {
 }
 
 function runTestsInContainer () {
-    echoMsg 'Calling test container ...'
+    echo '- Calling test container ...'
     echoTitle 'Running Tests in Container'
-    docker-compose run -e SCREEN_WIDTH=$SCREEN_WIDTH $name_service_test "${@}"
+    docker-compose run \
+        -e SCREEN_WIDTH=$SCREEN_WIDTH \
+        $name_service_test "${@}"
 
     return $?
 }
 
 function setFlagsTestAllUp () {
-    list_option_given=$(echoFlagOptions)
+    list_option_given="${list_option_given} $(echoFlagOptions)"
 }
 
 function setOptionCoverallsDryRun () {
@@ -335,8 +337,9 @@ function setOptionPHPUnitTestdox () {
 name_service_test='test'
 
 # Set width
-$(tput cols 2>/dev/null 1>/dev/null) && {
-    SCREEN_WIDTH=$(tput cols);
+tput cols 2>/dev/null 1>/dev/null
+[ $? -eq 0 ] && {
+    SCREEN_WIDTH=${SCREEN_WIDTH:-$(tput cols)};
 }
 SCREEN_WIDTH=${SCREEN_WIDTH:-80};
 
@@ -359,6 +362,59 @@ isFlagSet 'build' && {
     exit $?
 }
 
+! isFlagSet 'local' && ! isFlagSet 'docker' && {
+    isDockerAvailable && {
+        echoAlert '[Auto-detect]: Docker found'
+        echo '- Test will be run on Docker'
+        echo '- To specify use: local or docker'
+        list_option_given="${list_option_given} docker"
+    }
+}
+
+# Set default move
+[ ${#} -eq 0 ] && {
+    echoAlert '[NO option specified]: Running only PHPUnit'
+    echoHelpOption
+}
+
+# =============================================================================
+#  Call this script it self via Docker
+# =============================================================================
+isFlagSet 'docker' && {
+    isInstalledRequirements 2>/dev/null 1>/dev/null && {
+        echoAlert 'Requirements all installed in local'
+        echo '- RECOMMEND: Use "composer test local" command for faster test results.'
+    }
+
+    ! isInsideContainer && isDockerAvailable && {
+        list_option_given=$(echo "${list_option_given}" | sed -e 's/docker/local/g' )
+        runTestsInContainer "${list_option_given}"
+        result=$?
+
+        removeContainerPrune
+        exit $result
+    }
+
+    isInsideContainer && {
+        echoAlert 'You are already running inside the container.'
+        exit 1
+    }
+
+    ! isDockerAvailable && {
+        echoError '❌  ERROR: Docker not installed'
+        echo '- Please install Docker or use "composer test local" option to run the tests locally.'
+        exit 1
+    }
+}
+
+# =============================================================================
+#  Main
+# =============================================================================
+#  Run the actual tests.
+
+# Set minimum test
+list_option_given="${list_option_given} phpunit"
+
 # Set verbose mode flag
 #   0    -> yes
 #   else -> no
@@ -369,46 +425,13 @@ isFlagSet 'verbose' && {
     echoAlert 'For detailed output use option: verbose'
 }
 
-# Set default(minimum) test
-list_option_given="${list_option_given} phpunit"
-
-[ ${#} -eq 0 ] && {
-    echoAlert '[NO option specified]: Running only PHPUnit'
-    echoHelpOption
-}
-
+# Set all the flags up, if "all" option is specified
 isFlagSet 'all' && {
     echoAlert '[Full option specified]: Running all tests'
     setFlagsTestAllUp #Up all the test flags
 }
 
-# =============================================================================
-#  Run this script via container if "local" option NOT specified
-# =============================================================================
-! isFlagSet 'local' && ! isInsideContainer && {
-    isInstalledRequirements 2>/dev/null 1>/dev/null && {
-        echoAlert 'Requirements all installed in local'
-        echo '- RECOMMEND: Use "composer test local" command for faster test results.'
-    }
-
-    ! isDockerAvailable && {
-        echoError '❌  ERROR: Docker not installed'
-        echo '- Please install Docker or use "composer test local" option to run the tests locally.'
-        exit 1
-    }
-
-    runTestsInContainer "${@}"
-    result=$?
-
-    removeContainerPrune
-    exit $result
-}
-
-# =============================================================================
-#  Main
-# =============================================================================
-#  Run the actual tests.
-
+# Run tests
 runTest 'Check Requirements' runRequirementCheck
 runTest 'Diagnose' runDiagnose
 runTest 'PHPUnit' runPHPUnit
