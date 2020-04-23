@@ -20,8 +20,8 @@ services:
       - ./bin:/app/bin
   dev:
     build:
-      context: .
-      dockerfile: ./.devcontainer/Dockerfile
+      context: ./.devcontainer
+      dockerfile: Dockerfile
     image: dev_php/local
     environment:
       - COVERALLS_REPO_TOKEN
