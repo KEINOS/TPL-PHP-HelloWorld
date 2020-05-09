@@ -1,0 +1,7 @@
+build:
+  nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run --sub-project-dir=src/
+          - phpcs-run
