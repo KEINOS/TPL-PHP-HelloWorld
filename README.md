@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld.svg?branch=master)](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld/builds)
 [![Coverage Status](https://coveralls.io/repos/github/KEINOS/TPL-PHP-HelloWorld/badge.svg)](https://coveralls.io/github/KEINOS/TPL-PHP-HelloWorld)
 [![](https://img.shields.io/scrutinizer/quality/g/KEINOS/TPL-PHP-HelloWorld/master)](https://scrutinizer-ci.com/g/KEINOS/TPL-PHP-HelloWorld/build-status/master "Scrutinizer code quality")
+[![](https://img.shields.io/packagist/php-v/keinos/hello-world-tpl)](https://github.com/KEINOS/TPL-PHP-HelloWorld/blob/master/.travis.yml "Version Support")
 
 # Super cautious "Hello-World"
 
