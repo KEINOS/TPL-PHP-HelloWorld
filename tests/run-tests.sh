@@ -4,7 +4,7 @@
 #  Functions
 # =============================================================================
 
-function buildContainerTest () {
+function buildContainerTest() {
     echoTitle 'Rebuilding test container'
 
     isInsideContainer && {
@@ -24,59 +24,59 @@ function buildContainerTest () {
     }
 }
 
-function echoAlert () {
+function echoAlert() {
     echoHR '-'
     echo "💡  ${1}"
     echoHR '-'
 }
 
-function echoError () {
-    >&2 echoHR '-'
-    >&2 echo "  ${1}"
-    >&2 echoHR '-'
+function echoError() {
+    echoHR >&2 '-'
+    echo >&2 "  ${1}"
+    echoHR >&2 '-'
 }
 
-function echoFlagOptions () {
-    echo 'requirement diagnose phpunit phpstan psalm phan coveralls'
+function echoFlagOptions() {
+    echo 'requirement diagnose phpcs phpunit phpstan psalm phan coveralls'
 }
 
-function echoHelpOption () {
+function echoHelpOption() {
     echo '- Available Option Flags:'
     echo "    $(echoFlagOptions) (To test all use: all)"
 }
 
-function echoHR(){
+function echoHR() {
     # Draw Horizontal Line
     printf '%*s\n' "${SCREEN_WIDTH}" '' | tr ' ' ${1-=}
 }
 
-function echoInfoVersions () {
+function echoInfoVersions() {
     echo '-' $(php --version | head -1)
     echo '-' $(composer --version)
 }
 
-function echoMsg () {
+function echoMsg() {
     echo
     echo "  ${1}"
     echoHR '-'
 }
 
-function echoTitle () {
+function echoTitle() {
     echo
     echoHR
     echo "  ${1}"
     echoHR
 }
 
-function getPathParent () {
+function getPathParent() {
     echo "$(dirname "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)")"
 }
 
-function getPathScript () {
+function getPathScript() {
     echo "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)"
 }
 
-function isDockerAvailable () {
+function isDockerAvailable() {
     docker version 2>/dev/null 1>/dev/null && {
         return 0
     }
@@ -84,13 +84,13 @@ function isDockerAvailable () {
     return 1
 }
 
-function isFlagSet () {
-    option=$(tr '[A-Z]' '[a-z]' <<< "${1}")
+function isFlagSet() {
+    option=$(tr '[A-Z]' '[a-z]' <<<"${1}")
     echo "${list_option_given}" | grep $option 2>/dev/null 1>/dev/null
     return $?
 }
 
-function isInsideContainer () {
+function isInsideContainer() {
     isInsideTravis && {
         echoAlert 'You are running inside TravisCI.'
         return 0
@@ -104,7 +104,7 @@ function isInsideContainer () {
     return 1
 }
 
-function isInsideTravis () {
+function isInsideTravis() {
     echo $(cd ~/ && pwd) | grep travis 1>/dev/null 2>/dev/null && {
         return 0
     }
@@ -112,7 +112,7 @@ function isInsideTravis () {
     return 1
 }
 
-function isInstalledPakcage () {
+function isInstalledPackage() {
     echo -n "- Package: ${1} ... "
     [ -f "./vendor/bin/${1}" ] && {
         ./vendor/bin/$1 --version 2>/dev/null 1>/dev/null && {
@@ -125,19 +125,20 @@ function isInstalledPakcage () {
     return 1
 }
 
-function isInstalledRequirements () {
-    isInstalledPakcage phpunit && \
-    isInstalledPakcage phan && \
-    isInstalledPakcage php-coveralls && \
-    isInstalledPakcage phpstan && \
-    isInstalledPakcage psalm.phar && {
+function isInstalledRequirements() {
+    isInstalledPackage phpunit &&
+        isInstalledPackage phan &&
+        isInstalledPackage php-coveralls &&
+        isInstalledPackage phpstan &&
+        isInstalledPackage psalm.phar &&
+        isInstalledPackage phpcs && {
         return 0
     }
 
     return 1
 }
 
-function isXdebugAvailable () {
+function isXdebugAvailable() {
     php --version | grep Xdebug 2>/dev/null 1>/dev/null && {
         return 0
     }
@@ -145,28 +146,29 @@ function isXdebugAvailable () {
     return 1
 }
 
-function loadConfCoverall () {
+function loadConfCoverall() {
     path_file_conf_coveralls='./tests/conf/COVERALLS.env'
-    if [ -f "${path_file_conf_coveralls}" ];
-        then {
+    if [ -f "${path_file_conf_coveralls}" ]; then
+        {
             # Load Token for COVERALLS
             source $path_file_conf_coveralls
             export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
             export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
         }
-        else {
+    else
+        {
             echo '- Conf file not found at:' $path_file_conf_coveralls
         }
     fi
 }
 
-function removeContainerPrune () {
+function removeContainerPrune() {
     echo '- Removing prune container and images ...'
     docker container prune -f 1>/dev/null
     docker image prune -f 1>/dev/null
 }
 
-function runCoveralls () {
+function runCoveralls() {
     echoTitle 'TEST: Code Coverage'
     # Skip if option not set
     ! isFlagSet 'coveralls' && {
@@ -201,7 +203,7 @@ function runCoveralls () {
     return $?
 }
 
-function runDiagnose () {
+function runDiagnose() {
     echoTitle 'DIAGNOSE: composer'
     # Skip if option not set
     ! isFlagSet 'diagnose' && {
@@ -211,20 +213,30 @@ function runDiagnose () {
     return $?
 }
 
-function runPhan () {
+function runPhan() {
     echoTitle 'TEST: Phan'
     # Skip if option not set
     ! isFlagSet 'phan' && {
         return 2
     }
     PHAN_DISABLE_XDEBUG_WARN=1 \
-    ./vendor/bin/phan \
+        ./vendor/bin/phan \
         --allow-polyfill-parser \
         --directory ./src
     return $?
 }
 
-function runPHPStan () {
+function runPHPCS() {
+    echoTitle 'TEST: PHP Code Sniffer (Compliant with PSR2)'
+    # Skip if option not set
+    ! isFlagSet 'phpcs' && {
+        return 2
+    }
+    ./vendor/bin/phpcs -v
+    return $?
+}
+
+function runPHPStan() {
     echoTitle 'TEST: PHPStan'
     # Skip if option not set
     ! isFlagSet 'phpstan' && {
@@ -235,7 +247,7 @@ function runPHPStan () {
     return $?
 }
 
-function runPHPUnit () {
+function runPHPUnit() {
     echoTitle 'TEST: PHPUnit'
     # Skip if option not set
     ! isFlagSet 'phpunit' && {
@@ -254,7 +266,7 @@ function runPHPUnit () {
     return $?
 }
 
-function runPsalm () {
+function runPsalm() {
     echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
     # Skip if option not set
     ! isFlagSet 'psalm' && {
@@ -268,7 +280,7 @@ function runPsalm () {
     return $?
 }
 
-function runRequirementCheck () {
+function runRequirementCheck() {
     echoTitle 'CHECK: Requirement check for tests'
 
     # Skip if option not set
@@ -286,18 +298,21 @@ function runRequirementCheck () {
     return 0
 }
 
-function runTest () {
+function runTest() {
     name_test=$1
     # Run test function given
-    $2;
+    $2
     result=$?
     # Echo results
-    [ $result -eq 0 ] && echoMsg "✅  ${name_test}: passed";
-    [ $result -eq 1 ] && { echoError "❌  ${name_test}: failed"; all_tests_passed=1; };
-    [ $result -eq 2 ] && echoMsg "🛑  ${name_test}: skipped";
+    [ $result -eq 0 ] && echoMsg "✅  ${name_test}: passed"
+    [ $result -eq 1 ] && {
+        echoError "❌  ${name_test}: failed"
+        all_tests_passed=1
+    }
+    [ $result -eq 2 ] && echoMsg "🛑  ${name_test}: skipped"
 }
 
-function runTestsInContainer () {
+function runTestsInContainer() {
     echo '- Calling test container ...'
     echoTitle 'Running Tests in Container'
     docker-compose run \
@@ -307,11 +322,11 @@ function runTestsInContainer () {
     return $?
 }
 
-function setFlagsTestAllUp () {
+function setFlagsTestAllUp() {
     list_option_given="${list_option_given} $(echoFlagOptions)"
 }
 
-function setOptionCoverallsDryRun () {
+function setOptionCoverallsDryRun() {
     export COVERALLS_RUN_LOCALLY=1
     option_dry_run='--dry-run'
     isInsideTravis && {
@@ -322,7 +337,7 @@ function setOptionCoverallsDryRun () {
     }
 }
 
-function setOptionPHPUnitTestdox () {
+function setOptionPHPUnitTestdox() {
     option_testdox=''
     [ ${mode_verbose} -eq 0 ] && {
         option_testdox='--testdox'
@@ -339,15 +354,15 @@ name_service_test='test'
 # Set width
 tput cols 2>/dev/null 1>/dev/null
 [ $? -eq 0 ] && {
-    SCREEN_WIDTH=${SCREEN_WIDTH:-$(tput cols)};
+    SCREEN_WIDTH=${SCREEN_WIDTH:-$(tput cols)}
 }
-SCREEN_WIDTH=${SCREEN_WIDTH:-80};
+SCREEN_WIDTH=${SCREEN_WIDTH:-80}
 
 # Moving to script's parent directory.
 cd "$(getPathParent)"
 
 # Set all options/args given to this script in lower case
-list_option_given=$(tr '[A-Z]' '[a-z]' <<< "$@")
+list_option_given=$(tr '[A-Z]' '[a-z]' <<<"$@")
 
 # Set initial result flag
 #   0    -> All tests passed
@@ -387,7 +402,7 @@ isFlagSet 'docker' && {
     }
 
     ! isInsideContainer && isDockerAvailable && {
-        list_option_given=$(echo "${list_option_given}" | sed -e 's/docker/local/g' )
+        list_option_given=$(echo "${list_option_given}" | sed -e 's/docker/local/g')
         runTestsInContainer "${list_option_given}"
         result=$?
 
@@ -434,15 +449,17 @@ isFlagSet 'all' && {
 # Run tests
 runTest 'Check Requirements' runRequirementCheck
 runTest 'Diagnose' runDiagnose
+runTest 'PHPCS' runPHPCS
 runTest 'PHPUnit' runPHPUnit
 runTest 'PHPStan' runPHPStan
 runTest 'Psalm' runPsalm
 runTest 'Phan' runPhan
 runTest 'Coveralls' runCoveralls
 
-if [ $all_tests_passed -eq 0 ];
-    then echoTitle '✅  All tests passed.'
-    else >&2 echoTitle '❌  Some tests failed.'
+if [ $all_tests_passed -eq 0 ]; then
+    echoTitle '✅  All tests passed.'
+else
+    echoTitle >&2 '❌  Some tests failed.'
 fi
 
 exit $all_tests_passed

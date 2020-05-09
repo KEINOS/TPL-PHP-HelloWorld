@@ -38,7 +38,8 @@
         "phpstan/extension-installer": "^1.0",
         "phpstan/phpstan": "^0.12.10",
         "phpunit/phpunit": "^9.0 || ^8.0 || ^7.0 || ^6.5",
-        "psalm/phar": "^3.9"
+        "psalm/phar": "^3.9",
+        "squizlabs/php_codesniffer": "^3.5"
     },
     "config": {
         "sort-packages": true

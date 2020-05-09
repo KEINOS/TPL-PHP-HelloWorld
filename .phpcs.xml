@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<ruleset name="KEINOS Standards">
+    <description>Coding Standards for this project</description>
+
+    <!-- Target directories -->
+    <file>./src</file>
+    <file>./tests</file>
+
+    <!-- Exclude file/dir -->
+    <exclude-pattern>*.cache</exclude-pattern>
+
+    <!-- Standard Used -->
+    <rule ref="PSR2">
+        <!-- Rules to exclude -->
+        <exclude name="Generic.Files.LineLength.TooLong"/>
+    </rule>
+
+    <arg name="colors"/>
+    <arg value="p"/>
+
+    <ini name="memory_limit" value="128M"/>
+    <rule ref="PSR2"/>
+</ruleset>
