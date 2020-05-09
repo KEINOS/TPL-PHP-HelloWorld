@@ -10,24 +10,27 @@ This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun
 ## Tests
 
 - Supported PHP Version to test
-  - PHP v7.1.23, 7.1.33, 7.2.27, 7.3.14, 7.4.2(, nightly)
+  - PHP v7.1, 7.2, 7.3, 7.4 (, nightly)
   - Details see: [.travis.yml](./.travis.yml)
-  - Note: The nightly build version fails purposely on TravisCI.
+  - Note: The nightly build version (PHP8-dev) fails on purpose in TravisCI.
 - Unit Test & Code Coverage
   - [PHPUnit](https://phpunit.de/)
+- Coding Standard Compliance (PSR-2)
+  - [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
 - PHP Static Analysis
   - [PHPStan](https://github.com/phpstan/phpstan)
   - [PSalm](https://psalm.dev/)
   - [Phan](https://github.com/phan/phan)
-- Tests Over Docker
+- Docker for Local Testing
   - Details see: [docker-compose.yml](./docker-compose.yml)
 
 ## CIs Used
 
-This repo uses the following CIs. On your use, register your repo first and run the CI tests before any developments are made.
+This repo uses the following CIs. On your use, register your repo first.
 
-- [TravisCI](https://travis-ci.org/)
-- [COVERALLS](https://coveralls.io/)
+- [TravisCI](https://travis-ci.org/): Used for running tests.
+- [COVERALLS](https://coveralls.io/): Used for code coverage.
+- [Scrutinizer CI](https://scrutinizer-ci.com/): Used for code quality.
 
 # Using this package as a template/boilerplate
 
