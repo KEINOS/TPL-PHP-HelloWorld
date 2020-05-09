@@ -1,9 +1,16 @@
 <?php
+/**
+ * Main script.
+ *
+ * Overly-Cautious Development of Hello World!.
+ *
+ * @standard PSR2
+ */
 declare(strict_types=1);
 
 namespace KEINOS\HelloWorld;
 
-include_once(__DIR__ . '/../vendor/autoload.php');
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use KEINOS\HelloWorld\Hello;
 
