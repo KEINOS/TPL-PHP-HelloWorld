@@ -2,6 +2,11 @@
 
 # =============================================================================
 #  Functions
+#
+#    - Constants, the variables that won't be changed, are in "CAPITAL_SNAKE_CASES".
+#    - Global variables that might be changed are in "lower_snake_cases".
+#    - Function names are in "lowerCamelCases()".
+#    - "getter" functions begins with "get" and must be used as "foo=$(getMyValue)".
 # =============================================================================
 
 function buildContainerTest() {
@@ -18,7 +23,7 @@ function buildContainerTest() {
     }
 
     echo '- Building container ...'
-    docker-compose build --no-cache $name_service_test || {
+    docker-compose build --no-cache $NAME_SERVICE_TEST || {
         echoError '❌  Fail to build test container.'
         exit 1
     }
@@ -31,6 +36,9 @@ function echoAlert() {
 }
 
 function echoError() {
+    echo >&2 "${1}"
+}
+function echoErrorHR() {
     echoHR >&2 '-'
     echo >&2 "  ${1}"
     echoHR >&2 '-'
@@ -69,15 +77,43 @@ function echoTitle() {
 }
 
 function getPathParent() {
+    # Use this function by "x=$(getPathParent)"
     echo "$(dirname "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)")"
 }
 
 function getPathScript() {
+    # Use this function by "x=$(getPathScript)"
     echo "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)"
+}
+
+function getWidthScreen() {
+    # Use this function by "x=$(getWidthScreen)"
+    SCREEN_WIDTH_DEFAULT=80
+    $(tput cols 2>/dev/null 1>/dev/null) && {
+        SCREEN_WIDTH=$(tput cols)
+    }
+    SCREEN_WIDTH=${SCREEN_WIDTH:-$SCREEN_WIDTH_DEFAULT}
+    echo $SCREEN_WIDTH
+}
+
+function isComposerInstalled() {
+    composer --version 2>/dev/null 1>/dev/null && {
+        return 0
+    }
+
+    return 1
 }
 
 function isDockerAvailable() {
     docker version 2>/dev/null 1>/dev/null && {
+        return 0
+    }
+
+    return 1
+}
+
+function isDockerInstalled() {
+    which docker 2>/dev/null 1>/dev/null && {
         return 0
     }
 
@@ -289,7 +325,7 @@ function runRequirementCheck() {
     }
 
     isInstalledRequirements || {
-        echoError '❌  Missing: composer packages.'
+        echoErrorHR '❌  Missing: composer packages.'
         echo '- Required packages for testing missing. Run "composer install" to install them.'
         exit 1
     }
@@ -306,7 +342,7 @@ function runTest() {
     # Echo results
     [ $result -eq 0 ] && echoMsg "✅  ${name_test}: passed"
     [ $result -eq 1 ] && {
-        echoError "❌  ${name_test}: failed"
+        echoErrorHR "❌  ${name_test}: failed"
         all_tests_passed=1
     }
     [ $result -eq 2 ] && echoMsg "🛑  ${name_test}: skipped"
@@ -317,7 +353,7 @@ function runTestsInContainer() {
     echoTitle 'Running Tests in Container'
     docker-compose run \
         -e SCREEN_WIDTH=$SCREEN_WIDTH \
-        $name_service_test "${@}"
+        $NAME_SERVICE_TEST "${@}"
 
     return $?
 }
@@ -328,12 +364,14 @@ function setFlagsTestAllUp() {
 
 function setOptionCoverallsDryRun() {
     export COVERALLS_RUN_LOCALLY=1
+    # Set dry-run option by default
     option_dry_run='--dry-run'
     isInsideTravis && {
         echo '- Running inside Travis detected.'
         export TRAVIS=${TRAVIS:-true}
         export CI_NAME=${CI_NAME:-travis-ci}
-        option_dry_run=
+        # Unset dry-run option
+        option_dry_run=''
     }
 }
 
@@ -349,14 +387,10 @@ function setOptionPHPUnitTestdox() {
 # =============================================================================
 # Name of service container in docker-compose.
 #   See: ../docker-compose.yml
-name_service_test='test'
+NAME_SERVICE_TEST='test'
 
 # Set width
-tput cols 2>/dev/null 1>/dev/null
-[ $? -eq 0 ] && {
-    SCREEN_WIDTH=${SCREEN_WIDTH:-$(tput cols)}
-}
-SCREEN_WIDTH=${SCREEN_WIDTH:-80}
+export SCREEN_WIDTH=$(getWidthScreen)
 
 # Moving to script's parent directory.
 cd "$(getPathParent)"
@@ -396,11 +430,6 @@ isFlagSet 'build' && {
 #  Call this script it self via Docker
 # =============================================================================
 isFlagSet 'docker' && {
-    isInstalledRequirements 2>/dev/null 1>/dev/null && {
-        echoAlert 'Requirements all installed in local'
-        echo '- RECOMMEND: Use "composer test local" command for faster test results.'
-    }
-
     ! isInsideContainer && isDockerAvailable && {
         list_option_given=$(echo "${list_option_given}" | sed -e 's/docker/local/g')
         runTestsInContainer "${list_option_given}"
@@ -416,16 +445,57 @@ isFlagSet 'docker' && {
     }
 
     ! isDockerAvailable && {
-        echoError '❌  ERROR: Docker not installed'
+        echoErrorHR '❌  ERROR: Docker not installed'
         echo '- Please install Docker or use "composer test local" option to run the tests locally.'
         exit 1
     }
 }
 
+function isRequirementsInstallable() {
+    ! isComposerInstalled && {
+        flag_is_installable_requirements=1
+    }
+
+    [ "${flag_is_installable_requirements:+defined}" ] && {
+        return $flag_is_installable_requirements
+    }
+
+    composer install --dry-run 2>/dev/null 1>/dev/null
+    flag_is_installable_requirements=$?
+
+    return $flag_is_installable_requirements
+}
+
 # =============================================================================
 #  Main
-# =============================================================================
 #  Run the actual tests.
+# =============================================================================
+#  Requirement check (Exit if not)
+! isInstalledRequirements 2>/dev/null 1>/dev/null && {
+    echoErrorHR '❌  ERROR: Requirements not installed'
+    echoError '- Please install the requirements for testing.'
+
+    isDockerInstalled && {
+        echoError '💡  Docker is installed but it is not available to use.'
+        echoError '- Docker engine might be down. Check if Docker is running.'
+    }
+
+    isComposerInstalled || {
+        echoErrorHR '❌  Composer NOT installed.'
+        echoError '- You need Docker or PHP composer to run this tests.'
+        exit 1
+    }
+
+    echoError '💡  Composer is installed.'
+    echoError '- Checking if requirements can be installed in local ... (This may take time)'
+    isRequirementsInstallable && {
+        echoError '💡  Requirements can be installed.'
+        echoError '- Run the below command to install your requirements in local.'
+        echoError '    $ composer install'
+    }
+
+    exit 1
+}
 
 # Set minimum test
 list_option_given="${list_option_given} phpunit"
