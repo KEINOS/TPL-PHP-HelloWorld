@@ -161,15 +161,28 @@ function isInstalledPackage() {
     return 1
 }
 
-function isInstalledRequirements() {
+function isRequirementsInstallable() {
+    ! isComposerInstalled && {
+        flag_is_installable_requirements=1
+    }
+
+    [ "${flag_is_installable_requirements:+defined}" ] && {
+        return $flag_is_installable_requirements
+    }
+
+    composer install --dry-run 2>/dev/null 1>/dev/null
+    flag_is_installable_requirements=$?
+
+    return $flag_is_installable_requirements
+}
+
+function isRequirementsInstalled() {
     isInstalledPackage phpunit &&
         isInstalledPackage phan &&
         isInstalledPackage php-coveralls &&
         isInstalledPackage phpstan &&
         isInstalledPackage psalm.phar &&
-        isInstalledPackage phpcs && {
-        return 0
-    }
+        isInstalledPackage phpcs && { return 0; }
 
     return 1
 }
@@ -324,7 +337,7 @@ function runRequirementCheck() {
         return 2
     }
 
-    isInstalledRequirements || {
+    isRequirementsInstalled || {
         echoErrorHR '❌  Missing: composer packages.'
         echo '- Required packages for testing missing. Run "composer install" to install them.'
         exit 1
@@ -451,27 +464,12 @@ isFlagSet 'docker' && {
     }
 }
 
-function isRequirementsInstallable() {
-    ! isComposerInstalled && {
-        flag_is_installable_requirements=1
-    }
-
-    [ "${flag_is_installable_requirements:+defined}" ] && {
-        return $flag_is_installable_requirements
-    }
-
-    composer install --dry-run 2>/dev/null 1>/dev/null
-    flag_is_installable_requirements=$?
-
-    return $flag_is_installable_requirements
-}
-
 # =============================================================================
 #  Main
 #  Run the actual tests.
 # =============================================================================
 #  Requirement check (Exit if not)
-! isInstalledRequirements 2>/dev/null 1>/dev/null && {
+! isRequirementsInstalled 2>/dev/null 1>/dev/null && {
     echoErrorHR '❌  ERROR: Requirements not installed'
     echoError '- Please install the requirements for testing.'
 
