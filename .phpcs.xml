@@ -10,14 +10,11 @@
     <exclude-pattern>*.cache</exclude-pattern>
 
     <!-- Standard Used -->
-    <rule ref="PSR2">
-        <!-- Rules to exclude -->
-        <exclude name="Generic.Files.LineLength.TooLong"/>
-    </rule>
+    <rule ref="PSR2"/>
+    <rule ref="PSR12"/>
 
     <arg name="colors"/>
     <arg value="p"/>
 
     <ini name="memory_limit" value="128M"/>
-    <rule ref="PSR2"/>
 </ruleset>
