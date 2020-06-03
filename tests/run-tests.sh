@@ -1,14 +1,48 @@
 #!/bin/bash
-
 # =============================================================================
+#  Test script.
+#
+#  This file should be called via "composer test" command. See "scripts" in
+#  "/composer.json".
+#
+#  - Basic Options
+#    $ composer test           # Run unit test whether in local or docker.
+#    $ composer test all       # Run all the test and analyzing.
+#    $ composer test phpstan   # Run unit test and phpstan analyzing.
+#
+#    Test options can be in any order
+#      $ composer test phpstan psalm local
+#
+#  - Advanced Options
+#    $ composer test local     # Run unit test in local
+#    $ composer test docker    # Run unit test in Docker.
+#    $ composer test local all # Run all the test and analyzing.
+#
+#  - Available test, analyzer and other options
+#      verbose
+#      requirement
+#      diagnose
+#      phpcs
+#      phpcbf ... This will fix the marked sniff violations of PHPCS.
+#      phpunit
+#      phpstan
+#      psalm
+#      psalter ... Run Psalter via Psalm with --alter option.
+#      phan
+#      coveralls
+#      build  ... Use this option to rebuild Docker test container.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
 #  Functions
 #
-#    - Constants, the variables that won't be changed, are in "CAPITAL_SNAKE_CASES".
+#  Notes:
+#    - Constant variables that won't be changed are in "CAPITAL_SNAKE_CASES".
 #    - Global variables that might be changed are in "lower_snake_cases".
 #    - Function names are in "lowerCamelCases()".
-#    - "getter" functions begins with "get" and must be used as "foo=$(getMyValue)".
-# =============================================================================
-
+#    - "getter" functions begins with "get" and must be used as:
+#        foo=$(getMyValue)
+# -----------------------------------------------------------------------------
 function buildContainerTest() {
     echoTitle 'Rebuilding test container'
 
@@ -45,12 +79,13 @@ function echoErrorHR() {
 }
 
 function echoFlagOptions() {
-    echo 'requirement diagnose phpcs phpunit phpstan psalm phan coveralls'
+    echo 'requirement diagnose phpcs phpcbf phpunit phpstan psalm phan coveralls'
 }
 
 function echoHelpOption() {
     echo '- Available Option Flags:'
     echo "    $(echoFlagOptions) (To test all use: all)"
+    echo "    (optional for auto fix) psalter phpcbf"
 }
 
 function echoHR() {
@@ -182,7 +217,9 @@ function isRequirementsInstalled() {
         isInstalledPackage php-coveralls &&
         isInstalledPackage phpstan &&
         isInstalledPackage psalm.phar &&
-        isInstalledPackage phpcs && { return 0; }
+        isInstalledPackage phpcs && {
+        return 0
+    }
 
     return 1
 }
@@ -249,7 +286,7 @@ function runCoveralls() {
         --verbose \
         --no-interaction \
         $option_dry_run
-    return $?
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function runDiagnose() {
@@ -259,7 +296,7 @@ function runDiagnose() {
         return 2
     }
     composer diagnose
-    return $?
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function runPhan() {
@@ -272,7 +309,17 @@ function runPhan() {
         ./vendor/bin/phan \
         --allow-polyfill-parser \
         --directory ./src
-    return $?
+    [ $? -eq 0 ] && return 0 || return 1
+}
+
+function runPhpcbf() {
+    echoTitle 'FIX: Fix the marked sniff violations'
+    # Skip if option not set
+    ! isFlagSet 'phpcbf' && {
+        return 2
+    }
+    ./vendor/bin/phpcbf -v
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function runPHPCS() {
@@ -282,7 +329,7 @@ function runPHPCS() {
         return 2
     }
     ./vendor/bin/phpcs -v
-    return $?
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function runPHPStan() {
@@ -293,7 +340,7 @@ function runPHPStan() {
     }
     ./vendor/bin/phpstan \
         analyse src --level=max
-    return $?
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function runPHPUnit() {
@@ -312,21 +359,27 @@ function runPHPUnit() {
     ./vendor/bin/phpunit \
         --configuration ./tests/conf/phpunit.xml \
         $option_testdox
-    return $?
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function runPsalm() {
-    echoTitle 'TEST: PSalm (w/ alter and issue=all option)'
     # Skip if option not set
     ! isFlagSet 'psalm' && {
         return 2
     }
+
+    use_alter=''
+    title_temp='TEST: PSalm'
+    isFlagSet 'psalter' && {
+        use_alter='--alter --issues=all'
+        title_temp="${title_temp} (w/ alter and issue=all option)"
+    }
+    echoTitle "${title_temp}"
     ./vendor/bin/psalm.phar \
         --config=./tests/conf/psalm.xml \
-        --root ./src \
-        --alter \
-        --issues=all
-    return $?
+        --show-info=true \
+        $use_alter
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function runRequirementCheck() {
@@ -367,8 +420,7 @@ function runTestsInContainer() {
     docker-compose run \
         -e SCREEN_WIDTH=$SCREEN_WIDTH \
         $NAME_SERVICE_TEST "${@}"
-
-    return $?
+    [ $? -eq 0 ] && return 0 || return 1
 }
 
 function setFlagsTestAllUp() {
@@ -495,6 +547,10 @@ isFlagSet 'docker' && {
     exit 1
 }
 
+# Update autoload
+echoAlert 'Dumping composer autoload files'
+composer dump-autoload
+
 # Set minimum test
 list_option_given="${list_option_given} phpunit"
 
@@ -517,6 +573,7 @@ isFlagSet 'all' && {
 # Run tests
 runTest 'Check Requirements' runRequirementCheck
 runTest 'Diagnose' runDiagnose
+runTest 'PHPCBF' runPhpcbf
 runTest 'PHPCS' runPHPCS
 runTest 'PHPUnit' runPHPUnit
 runTest 'PHPStan' runPHPStan
