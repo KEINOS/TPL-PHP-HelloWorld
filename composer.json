@@ -23,7 +23,7 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/KEINOS/Dockerfile_of_Alpine/issues",
+        "issues": "https://github.com/KEINOS/TPL-PHP-HelloWorld/issues",
         "source": "https://github.com/KEINOS/TPL-PHP-HelloWorld"
     },
     "bin": ["bin/HelloWorld"],
