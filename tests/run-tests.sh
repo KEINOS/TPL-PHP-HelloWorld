@@ -198,17 +198,29 @@ function isInstalledPackage() {
 
 function isRequirementsInstallable() {
     ! isComposerInstalled && {
-        flag_is_installable_requirements=1
+        flag_installable_requirements=1
     }
 
-    [ "${flag_is_installable_requirements:+defined}" ] && {
-        return $flag_is_installable_requirements
+    [ "${flag_installable_requirements:+defined}" ] && {
+        return $flag_installable_requirements
     }
 
-    composer install --dry-run 2>/dev/null 1>/dev/null
-    flag_is_installable_requirements=$?
+    [ "${1}" = "verbose" ] && {
+        indent='    '
+        result=$(composer install --dry-run 2>&1 3>&1)
+        flag_installable_requirements=$?
+        echo
+        echo "${result}" |
+            while read line; do
+                echo "${indent}${line}"
+            done
+        echo
+    } || {
+        composer install --dry-run 2>/dev/null 1>/dev/null
+        flag_installable_requirements=$?
+    }
 
-    return $flag_is_installable_requirements
+    return $flag_installable_requirements
 }
 
 function isRequirementsInstalled() {
@@ -368,15 +380,20 @@ function runPsalm() {
         return 2
     }
 
-    use_alter=''
+    # Psalm fails with relative paths so specify as absolute path
+    path_dir_current=$(getPathScript)
+    path_file_conf_psalm="${path_dir_current}/conf/psalm.xml"
+
     title_temp='TEST: PSalm'
+    # Set psalter option if specified
+    use_alter=''
     isFlagSet 'psalter' && {
         use_alter='--alter --issues=all'
         title_temp="${title_temp} (w/ alter and issue=all option)"
     }
     echoTitle "${title_temp}"
     ./vendor/bin/psalm.phar \
-        --config=./tests/conf/psalm.xml \
+        --config="${path_file_conf_psalm}" \
         --show-info=true \
         $use_alter
     [ $? -eq 0 ] && return 0 || return 1
@@ -523,27 +540,33 @@ isFlagSet 'docker' && {
 #  Requirement check (Exit if not)
 ! isRequirementsInstalled 2>/dev/null 1>/dev/null && {
     echoErrorHR '❌  ERROR: Requirements not installed'
-    echoError '- Please install the requirements for testing.'
+    echoError '  - Please install the requirements for testing.'
 
     isDockerInstalled && {
-        echoError '💡  Docker is installed but it is not available to use.'
-        echoError '- Docker engine might be down. Check if Docker is running.'
+        ! isDockerAvailable && {
+            echoErrorHR '💡  Docker is installed but it is not available to use.'
+            echoError '  - Docker engine might be down. Check if Docker is running.'
+        } || {
+            echoErrorHR '💡  Docker is installed and available.'
+            echoError '  - Consider running without "local" option.'
+        }
     }
 
     isComposerInstalled || {
         echoErrorHR '❌  Composer NOT installed.'
-        echoError '- You need Docker or PHP composer to run this tests.'
+        echoError '  - You need Docker or PHP composer to run this tests.'
         exit 1
     }
 
-    echoError '💡  Composer is installed.'
-    echoError '- Checking if requirements can be installed in local ... (This may take time)'
-    isRequirementsInstallable && {
+    echoErrorHR '💡  Composer is installed.'
+    echoError '  - Checking if requirements can be installed in local ... (This may take time)'
+    isRequirementsInstallable verbose && {
         echoError '💡  Requirements can be installed.'
-        echoError '- Run the below command to install your requirements in local.'
+        echoError '  - Run the below command to install your requirements in local.'
         echoError '    $ composer install'
     }
 
+    echoError '  ❌  Composer packages can not be installed. See the above messages.'
     exit 1
 }
 
