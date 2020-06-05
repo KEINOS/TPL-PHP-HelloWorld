@@ -382,6 +382,7 @@ function runPsalm() {
 
     # Psalm fails with relative paths so specify as absolute path
     path_dir_current=$(getPathScript)
+    path_dir_parent=$(dirname "${path_dir_current}")
     path_file_conf_psalm="${path_dir_current}/conf/psalm.xml"
 
     title_temp='TEST: PSalm'
@@ -394,6 +395,7 @@ function runPsalm() {
     echoTitle "${title_temp}"
     ./vendor/bin/psalm.phar \
         --config="${path_file_conf_psalm}" \
+        --root="${path_dir_parent}" \
         --show-info=true \
         $use_alter
     [ $? -eq 0 ] && return 0 || return 1
