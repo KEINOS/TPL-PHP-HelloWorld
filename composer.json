@@ -66,7 +66,7 @@
         "test": [
             "./tests/run-tests.sh"
         ],
-        "build": [
+        "compile": [
             "box compile --config=./.init/box.json"
         ],
         "dev": [
