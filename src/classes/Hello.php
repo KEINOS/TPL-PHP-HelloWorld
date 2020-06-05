@@ -8,6 +8,6 @@ final class Hello
 {
     public function to(string $name): string
     {
-        return sayHelloTo($name);
+        return \KEINOS\HelloWorld\sayHelloTo($name);
     }
 }
