@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace KEINOS\HelloWorld;
 
-use \KEINOS\Tests\TestCase;
+use KEINOS\Tests\TestCase;
 
 final class ClassHelloTest extends TestCase
 {

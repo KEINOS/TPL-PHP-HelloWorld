@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Main script.
  *
@@ -6,6 +7,7 @@
  *
  * @standard PSR2
  */
+
 declare(strict_types=1);
 
 namespace KEINOS\HelloWorld;
