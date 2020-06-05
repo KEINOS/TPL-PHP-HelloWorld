@@ -16,7 +16,7 @@ This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun
 - Unit Test & Code Coverage
   - [PHPUnit](https://phpunit.de/)
 - Coding Standard Compliance
-  - [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) (PSR-2)
+  - [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) (PSR-2, PSR-12)
   - [PHP Mess Detector](https://phpmd.org/) (Avoid complexity)
 - PHP Static Analysis
   - [PHPStan](https://github.com/phpstan/phpstan)
