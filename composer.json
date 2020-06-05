@@ -70,7 +70,8 @@
             "box compile --config=./.init/box.json"
         ],
         "dev": [
-            "docker-compose run --rm --workdir='/app' -v $(pwd):/app dev"
+            "Composer\\Config::disableProcessTimeout",
+            "docker-compose run --rm --entrypoint='/bin/sh' --workdir='/app' -v $(pwd):/app dev < /dev/tty"
         ]
     }
 }
