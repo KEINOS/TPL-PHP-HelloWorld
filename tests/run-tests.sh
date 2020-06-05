@@ -24,6 +24,7 @@
 #      diagnose
 #      phpcs
 #      phpcbf ... This will fix the marked sniff violations of PHPCS.
+#      phpmd
 #      phpunit
 #      phpstan
 #      psalm
@@ -79,7 +80,7 @@ function echoErrorHR() {
 }
 
 function echoFlagOptions() {
-    echo 'requirement diagnose phpcs phpcbf phpunit phpstan psalm phan coveralls'
+    echo 'requirement diagnose phpcs phpmd phpcbf phpunit phpstan psalm phan coveralls'
 }
 
 function echoHelpOption() {
@@ -344,6 +345,16 @@ function runPHPCS() {
     [ $? -eq 0 ] && return 0 || return 1
 }
 
+function runPHPMD() {
+    echoTitle 'TEST: PHPMD (Mess Detector)'
+    # Skip if option not set
+    ! isFlagSet 'phpmd' && {
+        return 2
+    }
+    ./vendor/bin/phpmd ./src ansi ./tests/conf/phpmd.xml
+    [ $? -eq 0 ] && return 0 || return 1
+}
+
 function runPHPStan() {
     echoTitle 'TEST: PHPStan'
     # Skip if option not set
@@ -601,6 +612,7 @@ runTest 'Diagnose' runDiagnose
 runTest 'PHPCBF' runPhpcbf
 runTest 'PHPCS' runPHPCS
 runTest 'PHPUnit' runPHPUnit
+runTest 'PHPMD' runPHPMD
 runTest 'PHPStan' runPHPStan
 runTest 'Psalm' runPsalm
 runTest 'Phan' runPhan
