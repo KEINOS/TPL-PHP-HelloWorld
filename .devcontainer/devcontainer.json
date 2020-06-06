@@ -1,20 +1,20 @@
 {
-	"name": "Dev Container for PHP7",
-	"dockerFile": "Dockerfile",
-	"settings": {
-		"terminal.integrated.shell.linux": "/bin/bash"
-	},
-	"appPort": [
+    "name": "Dev Container for PHP7",
+    "dockerFile": "Dockerfile",
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "appPort": [
         "5963"
     ],
-	"postCreateCommand": "php --version; composer --version; sudo bash setup-composer.sh --dev; composer update; echo 'export LANG=ja_JP.UTF-8' >> ~/.bashrc; echo \"export PATH=/home/vscode/.composer/vendor/bin:$PATH\" >> ~/.bashrc;",
-	"remoteUser": "vscode",
-	"extensions": [
-		"ms-ceintl.vscode-language-pack-ja",
-		"felixfbecker.php-debug",
+    "postCreateCommand": "php --version; composer --version; sudo bash setup-composer.sh --dev; composer update; echo 'export LANG=ja_JP.UTF-8' >> ~/.bashrc; echo \"export PATH=/home/vscode/.composer/vendor/bin:$PATH\" >> ~/.bashrc;",
+    "remoteUser": "vscode",
+    "extensions": [
+        "ms-ceintl.vscode-language-pack-ja",
+        "felixfbecker.php-debug",
         "bmewburn.vscode-intelephense-client",
-		"junstyle.php-cs-fixer",
-		"rexshi.phpdoc-comment-vscode-plugin",
-		"dotjoshjohnson.xml"
-	]
+        "junstyle.php-cs-fixer",
+        "rexshi.phpdoc-comment-vscode-plugin",
+        "dotjoshjohnson.xml"
+    ]
 }

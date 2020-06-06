@@ -41,7 +41,9 @@ This repo uses the following CIs. On your use, register your repo first.
 
 ## How to use it as a template
 
-1. Choose one of the below command that suits you, to create a new project following your project name. (Ex. MyNewProject)
+1. Create a new copy.
+
+    Choose one of the below command that suits you, to create a new project following your project name. (Ex. MyNewProject)
 
     ```bash
     # For composer user (No Docker)
@@ -62,26 +64,27 @@ This repo uses the following CIs. On your use, register your repo first.
     rm -rf .git
     ```
 
-    **Note** that the project name provided (the "MyNewProject" above) will be the package name and the namespace such as "MyVendorName/MyNewProject".
+    **Note** that the project name provided (the "MyNewProject" above) will be the "package name" after the initialization below. Then the namespace will be something like "MyVendorName/MyNewProject".
 
-2. Run the script below, which will re-write the package and vendor names to the provided name. (Ex. MyVendorName)
+2. Initialize.
+
+    Run the script below, which will re-write the package and vendor names to the provided name. (Ex. MyVendorName)
 
     ```bash
     ./.init/initialize_package.php MyVendorName
     ```
 
-3. Before anything, run the tests to check it's basic test functionality.
+3. Functioning test.
+
+    Before anything, run the tests to check it's basic test functionality.
 
     ```bash
-    composer test local all
+    composer test all verbose
     ```
 
-    ```bash
-    # For Docker users
-    composer test all
-    ```
+4. Initial commit.
 
-4. Create an empty Git repository and commit them.
+    Create an empty Git repository and commit them.
 
     ```bash
     git init
@@ -90,6 +93,7 @@ This repo uses the following CIs. On your use, register your repo first.
     ```
 
 5. Push the repo to GitHub then register it to the following CIs.
+
     - [TravisCI](https://travis-ci.org/)
     - [COVERALLS](https://coveralls.io/)
 

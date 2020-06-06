@@ -4,35 +4,62 @@
 #
 #  This file should be called via "composer test" command. See "scripts" in
 #  "/composer.json".
-#
-#  - Basic Options
-#    $ composer test           # Run unit test whether in local or docker.
-#    $ composer test all       # Run all the test and analyzing.
-#    $ composer test phpstan   # Run unit test and phpstan analyzing.
-#
-#    Test options can be in any order
-#      $ composer test phpstan psalm local
-#
-#  - Advanced Options
-#    $ composer test local     # Run unit test in local
-#    $ composer test docker    # Run unit test in Docker.
-#    $ composer test local all # Run all the test and analyzing.
-#
-#  - Available test, analyzer and other options
-#      verbose
-#      requirement
-#      diagnose
-#      phpcs
-#      phpcbf ... This will fix the marked sniff violations of PHPCS.
-#      phpmd
-#      phpunit
-#      phpstan
-#      psalm
-#      psalter ... Run Psalter via Psalm with --alter option.
-#      phan
-#      coveralls
-#      build  ... Use this option to rebuild Docker test container.
 # =============================================================================
+
+MSG_HELP=$(cat << 'HEREDOC'
+
+- Basic Commands
+
+    $ composer test
+    $ composer bench
+    $ composer compile
+
+    test      ... Run the tests and/or analyzers in local or docker. For
+                  detailed usage see the next section.
+    bench     ... Run benchmarks in "./bench" dir.
+    compile   ... Creates a Phar archive under "./bin" dir.
+
+- Basic Test Command Usage
+
+    composer test [option option ...]
+
+    $ composer test
+    $ composer test help
+
+    $ composer test local
+    $ composer test docker
+
+    $ composer test phpmd
+    $ composer test phpstan psalm
+    $ composer test phpmd psalm local
+    $ composer test all
+    $ composer test all verbose
+
+    Without an option, only unit test will be run.
+
+- Available Options
+
+    build        ... Re-builds the Docker container for testing.
+    help         ... Shows this help.
+
+    verbose      ... Displays test results in verbose mode.
+    requirement  ... Check package requirement for developing
+    diagnose     ... Diagnoses composer
+
+    phan
+    coveralls
+    phpcs
+    phpmd
+    phpunit
+    phpstan
+    psalm
+
+    phpcbf       ... Fix the marked sniff violations of PHPCS.
+    psalter      ... Run Psalter via Psalm with --alter option.
+
+
+HEREDOC
+)
 
 # -----------------------------------------------------------------------------
 #  Functions
@@ -477,6 +504,11 @@ function setOptionPHPUnitTestdox() {
     }
 }
 
+function showHelp() {
+    echoTitle 'Help for developing this package.'
+    echo "${MSG_HELP}"
+}
+
 # =============================================================================
 #  Setup
 # =============================================================================
@@ -501,6 +533,11 @@ all_tests_passed=0
 # -----------------------------------------------------------------------------
 #  Flag Option Setting
 # -----------------------------------------------------------------------------
+isFlagSet 'help' && {
+    showHelp
+    exit $?
+}
+
 isFlagSet 'build' && {
     buildContainerTest
     exit $?

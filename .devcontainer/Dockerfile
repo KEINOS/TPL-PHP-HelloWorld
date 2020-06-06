@@ -32,7 +32,7 @@ RUN apt-get update \
         lsb-release \
         wget \
         zip unzip \
-       # [Optional] Add sudo support for the non-root user
+        # [Optional] Add sudo support for the non-root user
         sudo \
         # Set Lang env for Japan
         locales \
