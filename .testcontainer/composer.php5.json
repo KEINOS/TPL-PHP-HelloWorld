@@ -1,0 +1,14 @@
+{
+    "require": {
+        "phpunit/phpunit": "^5.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "KEINOS\\HelloWorld\\": "src/classes"
+        },
+        "files": [
+            "src/functions.php",
+            "tests/conf/TestCase.php"
+        ]
+    }
+}

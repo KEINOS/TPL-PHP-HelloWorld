@@ -10,19 +10,19 @@ final class ClassHelloTest extends TestCase
 {
     public function testRegularInput()
     {
-        $subject = new Hello();
+        $sample = new Hello();
 
         $expect = 'Hello, World!';
-        $this->expectOutputString($expect);
-        echo $subject->to('World');
+        $actual = $sample->to('World');
+        $this->assertSame($expect, $actual);
     }
 
     public function testAnotherInput()
     {
-        $subject = new Hello();
+        $sample = new Hello();
 
         $expect = 'Hello, Miku!';
-        $this->expectOutputString($expect);
-        echo $subject->to('Miku');
+        $actual = $sample->to('Miku');
+        $this->assertSame($expect, $actual);
     }
 }

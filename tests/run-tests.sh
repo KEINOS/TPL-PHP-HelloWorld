@@ -6,6 +6,8 @@
 #  "/composer.json".
 # =============================================================================
 
+OPTIONS='requirement diagnose phpcs phpmd phpcbf phpunit phpstan psalm phan coveralls'
+
 MSG_HELP=$(cat << 'HEREDOC'
 
 - Basic Commands
@@ -55,8 +57,7 @@ MSG_HELP=$(cat << 'HEREDOC'
     psalm
 
     phpcbf       ... Fix the marked sniff violations of PHPCS.
-    psalter      ... Run Psalter via Psalm with --alter option.
-
+    psalter      ... Run Psalter to fix Psalm errors (Run psalm --alter).
 
 HEREDOC
 )
@@ -107,7 +108,7 @@ function echoErrorHR() {
 }
 
 function echoFlagOptions() {
-    echo 'requirement diagnose phpcs phpmd phpcbf phpunit phpstan psalm phan coveralls'
+    echo "${OPTIONS}"
 }
 
 function echoHelpOption() {
@@ -137,6 +138,14 @@ function echoTitle() {
     echoHR
     echo "  ${1}"
     echoHR
+}
+
+function getNameImagePhp5() {
+    echo "php5_test"
+}
+
+function getNameTagPhp5() {
+    echo "local"
 }
 
 function getPathParent() {
@@ -352,6 +361,29 @@ function runPhan() {
     [ $? -eq 0 ] && return 0 || return 1
 }
 
+function runPhp5() {
+    isDockerAvailable || {
+        echoError 'Docker is not available to run.'
+        exit 1
+    }
+
+    echoTitle 'TEST: Running tests on PHP5 via container'
+    name_image_php5=$(getNameImagePhp5)
+    name_tag_php5=$(getNameTagPhp5)
+    docker image ls | grep $name_image_php5 | grep $name_tag_php5 1>/dev/null 2>/dev/null
+    [ $? -ne 0 ] && {
+        echo '- Building PHP5 test container image ...'
+        docker build --network host --no-cache -t "${name_image_php5}:${name_tag_php5}" --file ./.testcontainer/Dockerfile.php5 .
+        [ $? -ne 0 ] && {
+            echoError '❌  Failed to build image'
+            exit 1
+        }
+    }
+    echo '- Running container ...'
+    docker run --rm -v $(pwd)/tests:/app/tests -v $(pwd)/src:/app/src "${name_image_php5}:${name_tag_php5}"
+    exit $?
+}
+
 function runPhpcbf() {
     echoTitle 'FIX: Fix the marked sniff violations'
     # Skip if option not set
@@ -533,6 +565,16 @@ all_tests_passed=0
 # -----------------------------------------------------------------------------
 #  Flag Option Setting
 # -----------------------------------------------------------------------------
+
+isFlagSet 'php5' && {
+    isInsideContainer && {
+        echoError '❌  You can not run "php5" option inside the container.'
+        exit 1
+    }
+    runPhp5
+    exit $?
+}
+
 isFlagSet 'help' && {
     showHelp
     exit $?
