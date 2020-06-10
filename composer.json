@@ -61,7 +61,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "KEINOS\\Tests\\": "tests"
+            "KEINOS\\Tests\\": [
+                "tests",
+                "tests/conf"
+            ]
         }
     },
     "scripts" :{
