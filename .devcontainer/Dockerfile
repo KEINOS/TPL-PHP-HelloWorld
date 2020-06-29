@@ -58,7 +58,7 @@ RUN yes | pecl install xdebug \
 # Install composer and Phar Archiver(Box3)
 RUN sudo bash /install_composer.sh \
     && composer global require humbug/box \
-    && mv --force --verbose /root/.composer /home/vscode/.composer \
+    && cp -R --force --verbose /root/.composer /home/vscode/.composer \
     && chown --recursive vscode:vscode /home/vscode/.composer
 
 # Switch back to dialog for any ad-hoc use of apt-get

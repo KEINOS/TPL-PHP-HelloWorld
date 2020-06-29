@@ -16,9 +16,8 @@ then
     exit 1
 fi
 
-php composer-setup.php --quiet
-rm composer-setup.php
-mv ./composer.phar $(dirname $(which php))/composer && chmod +x $(dirname $(which php))/composer && \
+php composer-setup.php --quiet --install-dir=$(dirname $(which php)) --filename=composer && \
+composer diagnose && \
+composer --version && \
+rm composer-setup.php && \
 echo '✅  MOVED: composer.phar successfully moved to ENV PATH.'
-
-composer --version
