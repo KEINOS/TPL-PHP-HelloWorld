@@ -40,6 +40,10 @@ $path_dir_package = getPathDirRootOfPackage($list_files_in_root_expect);
 $name_pkg_from = 'HelloWorld';
 $name_pkg_to   = ucfirst(basename($path_dir_package));
 
+// Set package name for Packagist to replace
+$name_packagist_from = 'hello-world-tpl';
+$name_packagist_to   = convertToKebabCase(basename($path_dir_package));
+
 // Set names of vendor to replace
 $name_vendor_from = 'KEINOS';
 $name_vendor_to   = getNameVendor(); // Get or ask user the name of vendor
@@ -64,6 +68,10 @@ $list_before_after = [
     [
         'before' => $name_pkg_from,
         'after'  => $name_pkg_to,
+    ],
+    [
+        'before' => $name_packagist_from,
+        'after'  => $name_packagist_to,
     ],
 ];
 
@@ -145,6 +153,14 @@ function askUserNameVendor()
     } while (empty(trim($name_vendor)));
 
     return $name_vendor;
+}
+
+function convertToKebabCase(string $string)
+{
+    $string = preg_replace('/[\s]/', '-', $string);
+    $string = trim(strtolower(preg_replace('/[A-Z]/', '-\0', $string)), '-');
+
+    return preg_replace('/[_\-][_\-]+/', '-', $string);
 }
 
 function getListPathFilesAll(string $path, array $list_exclude): array
@@ -297,7 +313,7 @@ function rewriteFileName($path_file_from, $name_file_from, $name_file_to)
         throw new \RuntimeException(
             'Fail to change file name.' . PHP_EOL .
             '- Original file path: ' . $path_file_from . PHP_EOL .
-            '- Name to be replaces: ' . $name_file_to . PHP_EOL
+            '- Name to be replaced: ' . $name_file_to . PHP_EOL
         );
     }
 }
