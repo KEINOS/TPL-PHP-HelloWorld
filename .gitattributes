@@ -1,7 +1,32 @@
-# Windows compatible
+# ==========================================================================
+#  Windows compatible
+# ==========================================================================
 * text=auto eol=lf
 *.{cmd,[cC][mM][dD]} text eol=crlf
 *.{bat,[bB][aA][tT]} text eol=crlf
 
-# Let GitHub ignore the below dir/files to detect the languages used in this repo.
+# ==========================================================================
+#  Let GitHub ignore the below dir/files to detect the languages used in
+#  this repo.
+# ==========================================================================
 /.*/* linguist-vendored
+
+# ==========================================================================
+#  Files/directories to exclude from the published package to Packagist.
+#    - Uncomment the below lines to exclude
+# ==========================================================================
+#/.devcontainer export-ignore
+#/.init export-ignore
+#/.testcontainer export-ignore
+#/.vscode export-ignore
+#/bench export-ignore
+#/report export-ignore
+#/samples export-ignore
+#/tests export-ignore
+#/.dockerignore export-ignore
+#/.gitignore export-ignore
+#/.phpcs.xml export-ignore
+#/.travis.yml export-ignore
+#/CONTRIBUTE.md export-ignore
+#/docker-compose.yml export-ignore
+#/PULL_REQUEST.md export-ignore
