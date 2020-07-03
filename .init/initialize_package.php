@@ -40,6 +40,10 @@ $path_dir_package = getPathDirRootOfPackage($list_files_in_root_expect);
 $name_pkg_from = 'HelloWorld';
 $name_pkg_to   = ucfirst(basename($path_dir_package));
 
+// Set repo name to replace
+$name_repo_from = 'TPL-PHP-HelloWorld';
+$name_repo_to   = basename($path_dir_package);
+
 // Set package name for Packagist to replace
 $name_packagist_from = 'hello-world-tpl';
 $name_packagist_to   = convertToKebabCase(basename($path_dir_package));
@@ -68,6 +72,10 @@ $list_before_after = [
     [
         'before' => $name_pkg_from,
         'after'  => $name_pkg_to,
+    ],
+    [
+        'before' => $name_repo_from,
+        'after'  => $name_repo_to,
     ],
     [
         'before' => $name_packagist_from,
@@ -156,7 +164,8 @@ function askUserNameVendor()
 }
 
 /**
- * Skewer the capital letters and underline the white spaces.
+ * Convert string to Kebab case.
+ * Skewer and lower case the capital letters and underline the white spaces.
  *
  * - Ex1: "Foo-Bar-BAZ" -> "foo-bar-baz"
  * - Ex2: "Foo Bar BAZ" -> "foo_bar_baz"
