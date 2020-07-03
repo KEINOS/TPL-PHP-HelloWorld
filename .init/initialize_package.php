@@ -184,17 +184,14 @@ function convertToSnakeCase(string $string)
  * Converts string to a kebab-case.
  * Skewer and lower case the capital letters and underline the white spaces.
  *
- * - Ex1: "Foo-Bar-BAZ" -> "foo-bar-baz"
- * - Ex2: "Foo Bar BAZ" -> "foo_bar_baz"
- * - Ex3: "foo bar baz" -> "foo-bar-baz"
- * - Ex4: "foo_bar_baz" -> "foo_bar_baz"
- * - Details see: https://paiza.io/projects/JmxNJZ9xFvkPdURZJWcSVg
+ * - Patterns and details see: https://paiza.io/projects/JmxNJZ9xFvkPdURZJWcSVg
  * @param  string $string
  * @return string
  */
 function convertToKebabCase(string $string)
 {
     $string = preg_replace('/[\s.]+/', '_', $string);
+    $string = preg_replace('/[^0-9a-zA-Z_\-]/', '-', $string);
     $string = strtolower(preg_replace('/[A-Z]+/', '-\0', $string));
     $string = trim($string, '-_');
 
