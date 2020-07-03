@@ -164,7 +164,24 @@ function askUserNameVendor()
 }
 
 /**
- * Convert string to Kebab case.
+ * Converts string to a lower_snake_case.
+ * - Patterns and details see: https://paiza.io/projects/oUf3KujtN7IelJeh44ADUg
+ *
+ * @param  string $string
+ * @return string
+ */
+function convertToSnakeCase(string $string)
+{
+    $string = preg_replace('/[^0-9a-zA-Z_]/', '_', $string);
+    $string = preg_replace('/[A-Z]+/', '_\0', $string);
+    $string = preg_replace('/[\s._]+/', '_', $string);
+    $string = trim($string, '_');
+
+    return strtolower($string);
+}
+
+/**
+ * Converts string to a kebab-case.
  * Skewer and lower case the capital letters and underline the white spaces.
  *
  * - Ex1: "Foo-Bar-BAZ" -> "foo-bar-baz"
