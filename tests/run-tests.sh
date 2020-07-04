@@ -8,7 +8,8 @@
 
 OPTIONS='requirement diagnose phpcs phpmd phpcbf phpunit phpstan psalm phan coveralls'
 
-MSG_HELP=$(cat << 'HEREDOC'
+MSG_HELP=$(
+    cat <<'HEREDOC'
 
 - Basic Commands
 
@@ -221,25 +222,24 @@ function isInsideTravis() {
 }
 
 function isInstalledPackage() {
-    echo -n "- Package: ${1} ... "
-    [ -f "./vendor/bin/${1}" ] && {
-        ./vendor/bin/$1 --version 2>/dev/null 1>/dev/null && {
+    path_file_bin_installed_package="./vendor/bin/${1}"
+    echo -n "    - Package: ${1} ... "
+    [ -f $path_file_bin_installed_package ] && {
+        result=$($path_file_bin_installed_package --version 2>&1) && {
             echo 'installed'
             return 0
         }
     }
 
-    echo 'NOT FOUND'
+    echo "NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
     return 1
 }
 
 function isRequirementsInstallable() {
-    ! isComposerInstalled && {
-        flag_installable_requirements=1
-    }
-
-    [ "${flag_installable_requirements:+defined}" ] && {
-        return $flag_installable_requirements
+    flag_installable_requirements=1
+    isComposerInstalled || {
+        # composer is a must requirement
+        return 1
     }
 
     [ "${1}" = "verbose" ] && {
@@ -261,6 +261,8 @@ function isRequirementsInstallable() {
 }
 
 function isRequirementsInstalled() {
+
+    # To see which packages are not install run with 'verbose' option
     isInstalledPackage phpunit &&
         isInstalledPackage phan &&
         isInstalledPackage php-coveralls &&
@@ -633,6 +635,10 @@ isFlagSet 'docker' && {
 ! isRequirementsInstalled 2>/dev/null 1>/dev/null && {
     echoErrorHR '❌  ERROR: Requirements not installed'
     echoError '  - Please install the requirements for testing.'
+
+    isFlagSet 'verbose' && {
+        isRequirementsInstalled
+    }
 
     isDockerInstalled && {
         ! isDockerAvailable && {

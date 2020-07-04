@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * This script will re-write the file name and contents from the template ones to user given one.
+ * This script will re-write the file name and contents from the template to user provided name.
  *
  * Package name:
  *   The package name will be replaced from "HelloWorld" to the parent directory name. Which is
@@ -43,7 +43,7 @@ $name_pkg_to   = ucfirst($name_dir_script);
 
 // Set repo name to replace
 $name_repo_from = 'TPL-PHP-HelloWorld';
-$name_repo_to   = $name_dir_script;
+$name_repo_to   = convertToUpperCamelCase($name_dir_script);
 
 // Set package name for Packagist to replace
 $name_packagist_from = 'hello-world-tpl';
@@ -54,14 +54,15 @@ $name_vendor_from = 'KEINOS';
 $name_vendor_to   = getNameVendor(); // Get or ask user the name of vendor
 
 // Set namespace
-$namespace_from = "${name_vendor_from}/${name_pkg_from}";
-$namespace_to   = $name_vendor_to . '/' . convertToSnakeCase($name_dir_script);
+$namespace_from = "${name_vendor_from}\\${name_pkg_from}";
+$namespace_to   = $name_vendor_to . '\\' . convertToSnakeCase($name_dir_script);
 
 // List of files and dirs to exclude when renaming
 $list_exclude_file = [
     basename(__FILE__),
     '.git',
     'vendor',
+    'initialize_package.php',
 ];
 
 // List of pairs to replace names from-to
@@ -162,6 +163,29 @@ function askUserNameVendor()
     } while (empty(trim($name_vendor)));
 
     return $name_vendor;
+}
+
+/**
+ * Converts string to an UpperCamelCase.
+ * - Patterns and details see: https://paiza.io/projects/Rom4MQ4ld7-n_O9F5UFUXA
+ *
+ * @param  string $string
+ * @return string
+ */
+function convertToUpperCamelCase(string $string)
+{
+    $string = preg_replace('/[^0-9a-zA-Z_]/', '_', $string);
+    $string = preg_replace('/[A-Z]+/', '_\0', $string);
+    $string = preg_replace('/[\s._]+/', '_', $string);
+    $string = strtolower(trim($string, '_'));
+    $array  = explode('_', $string);
+    $string = '';
+    foreach($array as $word)
+    {
+        $string .= ucfirst($word);
+    }
+
+    return trim($string);
 }
 
 /**
@@ -307,26 +331,29 @@ function rewriteFileContents(string $path_file, array $list_before_after)
         throw new \RuntimeException('Fail to read file. Path: ' . $path_file);
     }
 
-    $flag_needs_save = false;
+    // Rewrite namespace only if it's a PHP file
+    if (pathinfo($path_file, PATHINFO_EXTENSION) === 'php') {
+        $data_target = rewriteNameSpace($data_original);
+    } else {
+        $data_target = $data_original;
+    }
 
-    $data_target     = rewriteNameSpace($data_original);
-    $flag_needs_save = ($data_target !== $data_original);
-
+    // Rewrite strings from-to $list_before_after
     foreach ($list_before_after as $substitute) {
         $from = $substitute['before'];
         $to   = $substitute['after'];
         if (strpos($data_target, $from) !== false) {
-            $data_target     = str_replace($from, $to, $data_target);
-            $flag_needs_save = true;
+            $data_target = str_replace($from, $to, $data_target);
         }
     }
 
-    if ($flag_needs_save === true) {
+    // Overwrite string to a file if change are made
+    if ($data_target !== $data_original) {
         $result = \file_put_contents($path_file, $data_target, LOCK_EX);
         if ($result === false) {
             throw new \RuntimeException('Fail to save/overwrite data to file:' . $path_file);
         }
-        echo 'OK ... ' . $path_file . PHP_EOL;
+        echo 'OK   ... ' . $path_file . PHP_EOL;
     } else {
         echo 'SKIP ... ' . $path_file . PHP_EOL;
     }
