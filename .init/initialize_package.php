@@ -35,18 +35,19 @@ $list_files_in_root_expect = [
     'src',
 ];
 $path_dir_package = getPathDirRootOfPackage($list_files_in_root_expect);
+$name_dir_script  = basename($path_dir_package);
 
 // Set package name to replace
 $name_pkg_from = 'HelloWorld';
-$name_pkg_to   = ucfirst(basename($path_dir_package));
+$name_pkg_to   = ucfirst($name_dir_script);
 
 // Set repo name to replace
 $name_repo_from = 'TPL-PHP-HelloWorld';
-$name_repo_to   = basename($path_dir_package);
+$name_repo_to   = $name_dir_script;
 
 // Set package name for Packagist to replace
 $name_packagist_from = 'hello-world-tpl';
-$name_packagist_to   = convertToKebabCase(basename($path_dir_package));
+$name_packagist_to   = convertToKebabCase($name_dir_script);
 
 // Set names of vendor to replace
 $name_vendor_from = 'KEINOS';
@@ -54,7 +55,7 @@ $name_vendor_to   = getNameVendor(); // Get or ask user the name of vendor
 
 // Set namespace
 $namespace_from = "${name_vendor_from}/${name_pkg_from}";
-$namespace_to   = "${name_vendor_to}/${name_pkg_to}";
+$namespace_to   = $name_vendor_to . '/' . convertToSnakeCase($name_dir_script);
 
 // List of files and dirs to exclude when renaming
 $list_exclude_file = [
