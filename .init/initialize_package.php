@@ -338,6 +338,11 @@ function rewriteFileContents(string $path_file, array $list_before_after)
         $data_target = $data_original;
     }
 
+    // Sort the array by length of the value in 'before' key from long to short
+    usort($list_before_after, function ($a, $b) {
+        return strlen($a['before']) < strlen($b['before']);
+    });
+
     // Rewrite strings from-to $list_before_after
     foreach ($list_before_after as $substitute) {
         $from = $substitute['before'];
