@@ -84,6 +84,10 @@ $list_before_after = [
         'after'  => $name_packagist_to,
     ],
 ];
+// Sort the array by length of the value in 'before' key from long to short
+usort($list_before_after, function ($a, $b) {
+    return strlen($a['before']) < strlen($b['before']);
+});
 
 // ============================================================================
 //  Main
@@ -180,8 +184,7 @@ function convertToUpperCamelCase(string $string)
     $string = strtolower(trim($string, '_'));
     $array  = explode('_', $string);
     $string = '';
-    foreach($array as $word)
-    {
+    foreach ($array as $word) {
         $string .= ucfirst($word);
     }
 
@@ -337,11 +340,6 @@ function rewriteFileContents(string $path_file, array $list_before_after)
     } else {
         $data_target = $data_original;
     }
-
-    // Sort the array by length of the value in 'before' key from long to short
-    usort($list_before_after, function ($a, $b) {
-        return strlen($a['before']) < strlen($b['before']);
-    });
 
     // Rewrite strings from-to $list_before_after
     foreach ($list_before_after as $substitute) {
