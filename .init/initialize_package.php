@@ -340,7 +340,7 @@ function removeInitializationTestFromTravisYamlFile()
         throw new \RuntimeException('File not found at: ' . $path_file_yaml_travis);
     }
 
-    $search  = "  - php ./.init/initialize_package.php MyVendorName\n    - /bin/bash ./tests/run-tests.sh local all";
+    $search  = "  - php ./.init/initialize_package.php MyVendorName\n  - /bin/bash ./tests/run-tests.sh local all";
     $replace = '';
     $subject = file_get_contents($path_file_yaml_travis);
     $data    = str_replace($search, $replace, $subject);
