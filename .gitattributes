@@ -2,18 +2,12 @@
 #  Windows compatible
 # ==========================================================================
 * text=auto eol=lf
-*.{cmd,[cC][mM][dD]} text eol=crlf
-*.{bat,[bB][aA][tT]} text eol=crlf
-
-# ==========================================================================
-#  Let GitHub ignore the below dir/files to detect the languages used in
-#  this repo.
-# ==========================================================================
-/.*/* linguist-vendored
 
 # ==========================================================================
 #  Files/directories to exclude from the published package to Packagist.
 #    - Uncomment the below lines to exclude
+#    - Note that this will take effect only for released tags. ":dev-master"
+#      tag will include these "export-ignore" files.
 # ==========================================================================
 #/.devcontainer export-ignore
 #/.init export-ignore
@@ -30,3 +24,9 @@
 #/CONTRIBUTE.md export-ignore
 #/docker-compose.yml export-ignore
 #/PULL_REQUEST.md export-ignore
+
+# ==========================================================================
+#  Let GitHub ignore the below dir/files to detect the languages used in
+#  this repo.
+# ==========================================================================
+/.*/* linguist-vendored

@@ -2,19 +2,17 @@
 
 declare(strict_types=1);
 
-namespace KEINOS\HelloWorld;
-
-use KEINOS\Tests\TestCase;
+namespace KEINOS\Tests;
 
 final class FunctionSayHelloToTest extends TestCase
 {
-    public function testHelloWorld()
+    public function testWorld()
     {
-        $this->assertSame('Hello, World!', sayHelloTo('World'));
+        $this->assertSame('Hello, World!', \KEINOS\HelloWorld\sayHelloTo('World'));
     }
 
-    public function testHelloMiku()
+    public function testMiku()
     {
-        $this->assertSame('Hello, Miku!', sayHelloTo('Miku'));
+        $this->assertSame('Hello, Miku!', \KEINOS\HelloWorld\sayHelloTo('Miku'));
     }
 }

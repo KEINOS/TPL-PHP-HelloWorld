@@ -114,6 +114,12 @@ try {
         $msg_error = implode(PHP_EOL, $output);
         throw new \RuntimeException($msg_error);
     }
+    if (! removeInitializationTestFromTravisYamlFile()) {
+        $msg_error = 'Error to rewrite .travis.yml to exclude initialization test.';
+        throw new \RuntimeException($msg_error);
+    }
+    echo '- YAML file ".travis.yml" over-written. Current file is:' . PHP_EOL
+       . file_get_contents( __DIR__ . '/../.travis.yml');
 } catch (\RuntimeException $e) {
     echo 'ERROR: ', PHP_EOL,  $e->getMessage(), "\n";
 }
@@ -321,6 +327,25 @@ function getPathDirReal(string $path): string
     }
 
     return $path;
+}
+
+/**
+ * Remove the initialization process test from ".travis.yml" since
+ * this line will not be needed after the initialization.
+ */
+function removeInitializationTestFromTravisYamlFile()
+{
+    $path_file_yaml_travis = __DIR__ .  '/../.travis.yml';
+    if (! file_exists($path_file_yaml_travis)) {
+        throw new \RuntimeException('File not found at: ' . $path_file_yaml_travis);
+    }
+
+    $search  = "  - php ./.init/initialize_package.php MyVendorName\n  - /bin/bash ./tests/run-tests.sh local all";
+    $replace = '';
+    $subject = file_get_contents($path_file_yaml_travis);
+    $data    = str_replace($search, $replace, $subject);
+
+    return (false !== file_put_contents($path_file_yaml_travis, $data));
 }
 
 function rewriteFileContents(string $path_file, array $list_before_after)

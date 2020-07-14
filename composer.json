@@ -12,11 +12,6 @@
             "role": "Maintainer"
         },
         {
-            "name": "tadsan",
-            "homepage": "https://qiita.com/tadsan/items/bf61520eb2d455e0e8b4",
-            "role": "InfluencedBy"
-        },
-        {
             "name": "contributors",
             "homepage": "https://github.com/KEINOS/TPL-PHP-HelloWorld/graphs/contributors",
             "role": "Contributors"
