@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace KEINOS\HelloWorld;
+namespace KEINOS\Tests;
 
-use KEINOS\Tests\TestCase;
+use KEINOS\HelloWorld\Hello;
 
 final class ClassHelloTest extends TestCase
 {
