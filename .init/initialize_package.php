@@ -336,7 +336,7 @@ function getPathDirReal(string $path): string
 function removeInitializationTestFromTravisYamlFile()
 {
     $path_file_yaml_travis = __DIR__ .  '/../.travis.yml';
-    if (! file_exists($path_file)) {
+    if (! file_exists($path_file_yaml_travis)) {
         throw new \RuntimeException('File not found at: ' . $path_file_yaml_travis);
     }
 
