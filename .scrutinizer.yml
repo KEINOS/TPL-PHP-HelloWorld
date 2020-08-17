@@ -1,7 +1,10 @@
 build:
+  environment:
+    COMPOSER: 'composer.dev.json'
   nodes:
     analysis:
       tests:
         override:
+          - command: ./.devcontainer/install_composer.sh
           - php-scrutinizer-run --sub-project-dir=src/
           - phpcs-run --standard=./tests/conf/phpcs.xml
