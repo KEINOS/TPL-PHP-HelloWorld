@@ -34,7 +34,7 @@ function isModeDev () {
 }
 
 function isPHP8 () {
-    php -v | grep PHP\ 8 1>/dev/null 2>/dev/null;
+    php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);';
     return $?
 }
 
@@ -133,8 +133,14 @@ isModeDev $1 && {
     rm -rf ./vendor && echo 'Vendor dir removed ...'
     ls -la ./
     echoMsg '💡  Installing WITH dev packages (./composer.dev.json)'
-    COMPOSER='composer.dev.json' composer install --verbose
-    result=$?
+    isPHP8 && {
+        echo '- PHP8 detected. Ignoring platform reqs.'
+        COMPOSER='composer.dev.json' composer install --verbose --ignore-platform-reqs
+        result=$?
+    } || {
+        COMPOSER='composer.dev.json' composer install --verbose
+        result=$?
+    }
     # some version of psalm forgets to create sym-link
     ! [ -f ./vendor/bin/psalm ] && {
         echoMsg 'Creating sym-link to: ./vendor/bin/psalm'
