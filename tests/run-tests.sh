@@ -93,6 +93,24 @@ function buildContainerTest() {
     }
 }
 
+function buildPhp5() {
+    echo '- Building PHP5 test container image ...'
+    name_image_php5=$(getNameImagePhp5)
+    name_tag_php5=$(getNameTagPhp5)
+
+    docker build \
+        --network host \
+        --no-cache \
+        -t "${name_image_php5}:${name_tag_php5}" \
+        --file ./tests/.testcontainer/Dockerfile.php5 \
+        .
+    [ $? -ne 0 ] && {
+        echoError '❌  Failed to build image'
+        exit 1
+    }
+    return 0
+}
+
 function echoAlert() {
     echoHR '-'
     echo "💡  ${1}"
@@ -231,7 +249,7 @@ function isInstalledPackage() {
         }
     }
 
-    echo "NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
+    echo "Package NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
     return 1
 }
 
@@ -239,12 +257,13 @@ function isRequirementsInstallable() {
     flag_installable_requirements=1
     isComposerInstalled || {
         # composer is a must requirement
+        echo 'Composer not installed. This is a must requirement.'
         return 1
     }
 
     [ "${1}" = "verbose" ] && {
         indent='    '
-        result=$(composer install --dry-run 2>&1 3>&1)
+        result=$(COMPOSER=composer.dev.json composer install --dry-run 2>&1 3>&1)
         flag_installable_requirements=$?
         echo
         echo "${result}" |
@@ -253,7 +272,7 @@ function isRequirementsInstallable() {
             done
         echo
     } || {
-        composer install --dry-run 2>/dev/null 1>/dev/null
+        COMPOSER=composer.dev.json composer install --dry-run 2>/dev/null 1>/dev/null
         flag_installable_requirements=$?
     }
 
@@ -361,24 +380,6 @@ function runPhan() {
         --allow-polyfill-parser \
         --directory ./src
     [ $? -eq 0 ] && return 0 || return 1
-}
-
-function buildPhp5() {
-    echo '- Building PHP5 test container image ...'
-    name_image_php5=$(getNameImagePhp5)
-    name_tag_php5=$(getNameTagPhp5)
-
-    docker build \
-        --network host \
-        --no-cache \
-        -t "${name_image_php5}:${name_tag_php5}" \
-        --file ./tests/.testcontainer/Dockerfile.php5 \
-        .
-    [ $? -ne 0 ] && {
-        echoError '❌  Failed to build image'
-        exit 1
-    }
-    return 0
 }
 
 function runPhp5() {
