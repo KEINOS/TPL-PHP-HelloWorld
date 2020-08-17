@@ -1,0 +1,19 @@
+{
+    "base-path": "./",
+    "main": "./src/Main.php",
+    "blacklist": [
+        ".devcontainer",
+        ".vscode",
+        ".init",
+        "report",
+        "tests",
+        ".dockerignore",
+        ".gitattributes",
+        ".gitignore",
+        ".travis.yml",
+        "docker-compose.yml",
+        "Dockerfile"
+    ],
+    "output": "./bin/HelloWorld",
+    "force-autodiscovery": true
+}

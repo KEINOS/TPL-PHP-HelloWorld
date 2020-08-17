@@ -63,3 +63,4 @@ RUN sudo bash /install_composer.sh \
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
+ENV COMPOSER='composer.dev.json'

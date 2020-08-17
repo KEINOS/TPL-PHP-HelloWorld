@@ -87,7 +87,7 @@ function buildContainerTest() {
     }
 
     echo '- Building container ...'
-    docker-compose build --no-cache $NAME_SERVICE_TEST || {
+    docker-compose -f docker-compose.dev.yml build --no-cache $NAME_SERVICE_TEST || {
         echoError '❌  Fail to build test container.'
         exit 1
     }
@@ -363,10 +363,33 @@ function runPhan() {
     [ $? -eq 0 ] && return 0 || return 1
 }
 
+function buildPhp5() {
+    echo '- Building PHP5 test container image ...'
+    name_image_php5=$(getNameImagePhp5)
+    name_tag_php5=$(getNameTagPhp5)
+
+    docker build \
+        --network host \
+        --no-cache \
+        -t "${name_image_php5}:${name_tag_php5}" \
+        --file ./tests/.testcontainer/Dockerfile.php5 \
+        .
+    [ $? -ne 0 ] && {
+        echoError '❌  Failed to build image'
+        exit 1
+    }
+    return 0
+}
+
 function runPhp5() {
     isDockerAvailable || {
         echoError 'Docker is not available to run.'
         exit 1
+    }
+
+    isFlagSet 'build' && {
+        buildPhp5
+        exit $?
     }
 
     echoTitle 'TEST: Running tests on PHP5 via container'
@@ -374,15 +397,16 @@ function runPhp5() {
     name_tag_php5=$(getNameTagPhp5)
     docker image ls | grep $name_image_php5 | grep $name_tag_php5 1>/dev/null 2>/dev/null
     [ $? -ne 0 ] && {
-        echo '- Building PHP5 test container image ...'
-        docker build --network host --no-cache -t "${name_image_php5}:${name_tag_php5}" --file ./.testcontainer/Dockerfile.php5 .
-        [ $? -ne 0 ] && {
-            echoError '❌  Failed to build image'
-            exit 1
-        }
+        buildPhp5
     }
+
     echo '- Running container ...'
-    docker run --rm -v $(pwd)/tests:/app/tests -v $(pwd)/src:/app/src "${name_image_php5}:${name_tag_php5}"
+    docker run \
+        --rm \
+        -v $(pwd)/tests:/app/tests \
+        -v $(pwd)/src:/app/src \
+        -v $(pwd)/composer.json:/app/composer.json \
+        "${name_image_php5}:${name_tag_php5}"
     exit $?
 }
 
@@ -392,7 +416,7 @@ function runPhpcbf() {
     ! isFlagSet 'phpcbf' && {
         return 2
     }
-    ./vendor/bin/phpcbf -v
+    ./vendor/bin/phpcbf --standard=./tests/conf/phpcs.xml -v
     [ $? -eq 0 ] && return 0 || return 1
 }
 
@@ -402,7 +426,7 @@ function runPHPCS() {
     ! isFlagSet 'phpcs' && {
         return 2
     }
-    ./vendor/bin/phpcs -v
+    ./vendor/bin/phpcs --standard=./tests/conf/phpcs.xml -v
     [ $? -eq 0 ] && return 0 || return 1
 }
 
@@ -508,7 +532,7 @@ function runTest() {
 function runTestsInContainer() {
     echo '- Calling test container ...'
     echoTitle 'Running Tests in Container'
-    docker-compose run \
+    docker-compose --file docker-compose.dev.yml run \
         -e SCREEN_WIDTH=$SCREEN_WIDTH \
         $NAME_SERVICE_TEST "${@}"
     [ $? -eq 0 ] && return 0 || return 1

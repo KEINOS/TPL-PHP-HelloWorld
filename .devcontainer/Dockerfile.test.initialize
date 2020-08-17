@@ -1,0 +1,25 @@
+# =============================================================================
+#  Docker container to test "initialize_package.php" functionability.
+# =============================================================================
+#  Run: $ composer test-init
+
+FROM php:alpine
+
+USER root
+
+RUN apk --no-cache add \
+      git \
+      bash \
+      && \
+    echo 'memory_limit = -1' > /usr/local/etc/php/php.ini
+
+COPY . /app
+
+WORKDIR /app
+
+ENV COMPOSER='composer.dev.json'
+
+RUN echo 'memory_limit = -1' > /usr/local/etc/php/php.ini && \
+    /app/.devcontainer/install_composer.sh
+
+ENTRYPOINT [ "/bin/sh", "/app/.devcontainer/entrypoint.test.initialize.sh" ]

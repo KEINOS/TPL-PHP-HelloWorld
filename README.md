@@ -71,7 +71,7 @@ This repo uses the following CIs. On your use, register your repo first.
     Run the script below, which will re-write the package and vendor names to the provided name. (Ex. MyVendorName)
 
     ```bash
-    ./.init/initialize_package.php MyVendorName
+    ./.devcontainer/initialize_package.php MyVendorName
     ```
 
 3. Functioning test.

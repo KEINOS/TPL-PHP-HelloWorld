@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 echo '========================================================================'
 echo ' Installer of PHP Composer for VSCode'
@@ -17,7 +17,7 @@ then
 fi
 
 php composer-setup.php --quiet --install-dir=$(dirname $(which php)) --filename=composer && \
-composer diagnose && \
 composer --version && \
+composer diagnose && \
 rm composer-setup.php && \
 echo '✅  MOVED: composer.phar successfully moved to ENV PATH.'

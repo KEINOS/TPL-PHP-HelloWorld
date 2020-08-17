@@ -6,6 +6,7 @@ tools
 report
 
 composer.lock
+composer.dev.lock
 COVERALLS.env
 
 ## ============================================================================

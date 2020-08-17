@@ -29,5 +29,5 @@ matrix:
 
 script:
   - /bin/bash ./tests/run-tests.sh local all
-  - php ./.init/initialize_package.php MyVendorName
+  - php ./.devcontainer/initialize_package.php MyVendorName
   - /bin/bash ./tests/run-tests.sh local all
