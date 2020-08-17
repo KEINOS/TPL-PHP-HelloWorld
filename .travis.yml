@@ -3,6 +3,7 @@ language: php
 env:
   global:
   - PHAN_DISABLE_XDEBUG_WARN=1
+  - COMPOSER=composer.dev.json
 
 install: /bin/bash ./.devcontainer/setup_composer.sh --dev && sudo snap install tree
 
