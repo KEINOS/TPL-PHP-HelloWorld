@@ -1,6 +1,7 @@
 build:
   environment:
-    COMPOSER: 'composer.dev.json'
+    variables:
+      COMPOSER: 'composer.dev.json'
   nodes:
     analysis:
       tests:
