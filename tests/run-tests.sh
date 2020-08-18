@@ -256,6 +256,11 @@ function isInstalledPackage() {
     return 0
 }
 
+function isPHP8() {
+    php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);'
+    return $?
+}
+
 function isRequirementsInstallable() {
     flag_installable_requirements=1
     isComposerInstalled || {
@@ -624,6 +629,14 @@ isFlagSet 'build' && {
     }
 }
 
+# Set verbose mode global
+#   0    -> yes
+#   else -> no
+mode_verbose=1
+isFlagSet 'verbose' && {
+    mode_verbose=0
+}
+
 # Set default move
 [ ${#} -eq 0 ] && {
     echoAlert '[NO option specified]: Running only PHPUnit'
@@ -703,14 +716,9 @@ composer dump-autoload
 # Set minimum test
 list_option_given="${list_option_given} phpunit"
 
-# Set verbose mode flag
-#   0    -> yes
-#   else -> no
-mode_verbose=1
-isFlagSet 'verbose' && {
-    mode_verbose=0
-} || {
-    echoAlert 'For detailed output use option: verbose'
+# Alert if verbose is available
+[ $mode_verbose -eq 0 ] && {
+    echoAlert 'For detailed output, use option: verbose'
 }
 
 # Set all the flags up, if "all" option is specified
