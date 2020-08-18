@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace KEINOS\Tests;
 
-use KEINOS\HelloWorld\Hello;
+use KEINOS\MyPackageName\Hello;
 
 final class ClassHelloTest extends TestCase
 {

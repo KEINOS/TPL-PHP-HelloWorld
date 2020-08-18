@@ -87,10 +87,28 @@ function buildContainerTest() {
     }
 
     echo '- Building container ...'
-    docker-compose build --no-cache $NAME_SERVICE_TEST || {
+    docker-compose -f docker-compose.dev.yml build --no-cache $NAME_SERVICE_TEST || {
         echoError '❌  Fail to build test container.'
         exit 1
     }
+}
+
+function buildPhp5() {
+    echo '- Building PHP5 test container image ...'
+    name_image_php5=$(getNameImagePhp5)
+    name_tag_php5=$(getNameTagPhp5)
+
+    docker build \
+        --network host \
+        --no-cache \
+        -t "${name_image_php5}:${name_tag_php5}" \
+        --file ./tests/.testcontainer/Dockerfile.php5 \
+        .
+    [ $? -ne 0 ] && {
+        echoError '❌  Failed to build image'
+        exit 1
+    }
+    return 0
 }
 
 function echoAlert() {
@@ -224,27 +242,36 @@ function isInsideTravis() {
 function isInstalledPackage() {
     path_file_bin_installed_package="./vendor/bin/${1}"
     echo -n "    - Package: ${1} ... "
-    [ -f $path_file_bin_installed_package ] && {
-        result=$($path_file_bin_installed_package --version 2>&1) && {
-            echo 'installed'
-            return 0
-        }
+    [ -f $path_file_bin_installed_package ] || {
+        echo "Package NOT FOUND at: ${path_file_bin_installed_package}"
+        return 1
     }
 
-    echo "NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
-    return 1
+    result=$(COMPOSER=composer.dev.json $path_file_bin_installed_package --version 2>&1) || {
+        echo "Package NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
+        return 1
+    }
+
+    echo 'installed'
+    return 0
+}
+
+function isPHP8() {
+    php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);'
+    return $?
 }
 
 function isRequirementsInstallable() {
     flag_installable_requirements=1
     isComposerInstalled || {
         # composer is a must requirement
+        echo 'Composer not installed. This is a must requirement.'
         return 1
     }
 
     [ "${1}" = "verbose" ] && {
         indent='    '
-        result=$(composer install --dry-run 2>&1 3>&1)
+        result=$(COMPOSER=composer.dev.json composer install --dry-run 2>&1 3>&1)
         flag_installable_requirements=$?
         echo
         echo "${result}" |
@@ -253,7 +280,7 @@ function isRequirementsInstallable() {
             done
         echo
     } || {
-        composer install --dry-run 2>/dev/null 1>/dev/null
+        COMPOSER=composer.dev.json composer install --dry-run 2>/dev/null 1>/dev/null
         flag_installable_requirements=$?
     }
 
@@ -369,20 +396,26 @@ function runPhp5() {
         exit 1
     }
 
+    isFlagSet 'build' && {
+        buildPhp5
+        exit $?
+    }
+
     echoTitle 'TEST: Running tests on PHP5 via container'
     name_image_php5=$(getNameImagePhp5)
     name_tag_php5=$(getNameTagPhp5)
     docker image ls | grep $name_image_php5 | grep $name_tag_php5 1>/dev/null 2>/dev/null
     [ $? -ne 0 ] && {
-        echo '- Building PHP5 test container image ...'
-        docker build --network host --no-cache -t "${name_image_php5}:${name_tag_php5}" --file ./.testcontainer/Dockerfile.php5 .
-        [ $? -ne 0 ] && {
-            echoError '❌  Failed to build image'
-            exit 1
-        }
+        buildPhp5
     }
+
     echo '- Running container ...'
-    docker run --rm -v $(pwd)/tests:/app/tests -v $(pwd)/src:/app/src "${name_image_php5}:${name_tag_php5}"
+    docker run \
+        --rm \
+        -v $(pwd)/tests:/app/tests \
+        -v $(pwd)/src:/app/src \
+        -v $(pwd)/composer.json:/app/composer.json \
+        "${name_image_php5}:${name_tag_php5}"
     exit $?
 }
 
@@ -392,7 +425,7 @@ function runPhpcbf() {
     ! isFlagSet 'phpcbf' && {
         return 2
     }
-    ./vendor/bin/phpcbf -v
+    ./vendor/bin/phpcbf --standard=./tests/conf/phpcs.xml -v
     [ $? -eq 0 ] && return 0 || return 1
 }
 
@@ -402,7 +435,7 @@ function runPHPCS() {
     ! isFlagSet 'phpcs' && {
         return 2
     }
-    ./vendor/bin/phpcs -v
+    ./vendor/bin/phpcs --standard=./tests/conf/phpcs.xml -v
     [ $? -eq 0 ] && return 0 || return 1
 }
 
@@ -508,7 +541,7 @@ function runTest() {
 function runTestsInContainer() {
     echo '- Calling test container ...'
     echoTitle 'Running Tests in Container'
-    docker-compose run \
+    docker-compose --file docker-compose.dev.yml run \
         -e SCREEN_WIDTH=$SCREEN_WIDTH \
         $NAME_SERVICE_TEST "${@}"
     [ $? -eq 0 ] && return 0 || return 1
@@ -596,6 +629,14 @@ isFlagSet 'build' && {
     }
 }
 
+# Set verbose mode global
+#   0    -> yes
+#   else -> no
+mode_verbose=1
+isFlagSet 'verbose' && {
+    mode_verbose=0
+}
+
 # Set default move
 [ ${#} -eq 0 ] && {
     echoAlert '[NO option specified]: Running only PHPUnit'
@@ -656,12 +697,12 @@ isFlagSet 'docker' && {
         exit 1
     }
 
-    echoErrorHR '💡  Composer is installed.'
-    echoError '  - Checking if requirements can be installed in local ... (This may take time)'
+    echoAlert '💡  Composer is installed.'
+    echo '  - Checking if requirements can be installed in local ... (This may take time)'
     isRequirementsInstallable verbose && {
-        echoError '💡  Requirements can be installed.'
-        echoError '  - Run the below command to install your requirements in local.'
-        echoError '    $ composer install'
+        echoAlert '💡  Requirements can be installed.'
+        echo '  - Run the below command to install your requirements in local.'
+        echo '    $ composer install'
     }
 
     echoError '  ❌  Composer packages can not be installed. See the above messages.'
@@ -675,14 +716,9 @@ composer dump-autoload
 # Set minimum test
 list_option_given="${list_option_given} phpunit"
 
-# Set verbose mode flag
-#   0    -> yes
-#   else -> no
-mode_verbose=1
-isFlagSet 'verbose' && {
-    mode_verbose=0
-} || {
-    echoAlert 'For detailed output use option: verbose'
+# Alert if verbose is available
+[ $mode_verbose -eq 0 ] && {
+    echoAlert 'For detailed output, use option: verbose'
 }
 
 # Set all the flags up, if "all" option is specified

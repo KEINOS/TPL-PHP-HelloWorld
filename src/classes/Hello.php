@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
-namespace KEINOS\HelloWorld;
+namespace KEINOS\MyPackageName;
 
 final class Hello
 {
     public function to(string $name): string
     {
-        return \KEINOS\HelloWorld\sayHelloTo($name);
+        return \KEINOS\MyPackageName\sayHelloTo($name);
     }
 }

@@ -4,11 +4,10 @@
  * Functions.
  *
  * Place the functions in alphabetical order by function name.
+ * - Suggested: declare(strict_types=1);
  */
 
-declare(strict_types=1);
-
-namespace KEINOS\HelloWorld;
+namespace KEINOS\MyPackageName;
 
 function sayHelloTo(string $name): string
 {

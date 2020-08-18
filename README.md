@@ -47,7 +47,7 @@ This repo uses the following CIs. On your use, register your repo first.
 
     ```bash
     # For composer user (No Docker)
-    composer create-project keinos/hello-world-tpl MyNewProject
+    COMPOSER=composer.dev.json composer create-project keinos/hello-world-tpl MyNewProject
     cd MyNewProject
     ```
 
@@ -71,7 +71,7 @@ This repo uses the following CIs. On your use, register your repo first.
     Run the script below, which will re-write the package and vendor names to the provided name. (Ex. MyVendorName)
 
     ```bash
-    ./.init/initialize_package.php MyVendorName
+    ./.devcontainer/initialize_package.php MyVendorName
     ```
 
 3. Functioning test.
@@ -81,6 +81,8 @@ This repo uses the following CIs. On your use, register your repo first.
     ```bash
     composer test all verbose
     ```
+
+    **Note** that `composer.json` is for production. For development in local, use `composer.dev.json`. Rename it temporary or set `COMPOSER` env variable as `COMPOSER=composer.dev.json`.
 
 4. Initial commit.
 

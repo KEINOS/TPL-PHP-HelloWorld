@@ -10,11 +10,11 @@
 
 declare(strict_types=1);
 
-namespace KEINOS\HelloWorld;
+namespace KEINOS\MyPackageName;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use KEINOS\HelloWorld\Hello;
+use KEINOS\MyPackageName\Hello;
 
 $hello = new Hello();
 $name  = 'KEINOS';

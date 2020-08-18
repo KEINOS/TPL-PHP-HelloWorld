@@ -3,8 +3,9 @@ language: php
 env:
   global:
   - PHAN_DISABLE_XDEBUG_WARN=1
+  - COMPOSER=composer.dev.json
 
-install: /bin/bash ./.init/setup-composer.sh --dev && sudo snap install tree
+install: /bin/bash ./.devcontainer/setup_composer.sh --dev && sudo snap install tree
 
 matrix:
   include:
@@ -28,6 +29,6 @@ matrix:
     - php: nightly
 
 script:
-  - /bin/bash ./tests/run-tests.sh local all
-  - php ./.init/initialize_package.php MyVendorName
-  - /bin/bash ./tests/run-tests.sh local all
+  - /bin/bash ./tests/run-tests.sh local all verbose
+  - php ./.devcontainer/initialize_package.php MyVendorName
+  - /bin/bash ./tests/run-tests.sh local all verbose
