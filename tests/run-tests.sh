@@ -242,15 +242,18 @@ function isInsideTravis() {
 function isInstalledPackage() {
     path_file_bin_installed_package="./vendor/bin/${1}"
     echo -n "    - Package: ${1} ... "
-    [ -f $path_file_bin_installed_package ] && {
-        result=$($path_file_bin_installed_package --version 2>&1) && {
-            echo 'installed'
-            return 0
-        }
+    [ -f $path_file_bin_installed_package ] || {
+        echo "Package NOT FOUND at: ${path_file_bin_installed_package}"
+        return 1
     }
 
-    echo "Package NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
-    return 1
+    result=$(COMPOSER=composer.dev.json $path_file_bin_installed_package --version 2>&1) || {
+        echo "Package NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
+        return 1
+    }
+
+    echo 'installed'
+    return 0
 }
 
 function isRequirementsInstallable() {
@@ -681,12 +684,12 @@ isFlagSet 'docker' && {
         exit 1
     }
 
-    echoErrorHR '💡  Composer is installed.'
-    echoError '  - Checking if requirements can be installed in local ... (This may take time)'
+    echoAlert '💡  Composer is installed.'
+    echo '  - Checking if requirements can be installed in local ... (This may take time)'
     isRequirementsInstallable verbose && {
-        echoError '💡  Requirements can be installed.'
-        echoError '  - Run the below command to install your requirements in local.'
-        echoError '    $ composer install'
+        echoAlert '💡  Requirements can be installed.'
+        echo '  - Run the below command to install your requirements in local.'
+        echo '    $ composer install'
     }
 
     echoError '  ❌  Composer packages can not be installed. See the above messages.'
