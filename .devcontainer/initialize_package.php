@@ -16,6 +16,9 @@
  *   Check "scripts" key value in `/composer.json`.
  */
 
+// Avoid memory size exhaustion. Issue fix: https://github.com/KEINOS/TPL-PHP-HelloWorld/issues/51
+ini_set("memory_limit", "200M");
+
 echo '------------------------------------------------------------' . PHP_EOL;
 echo ' Initializing package via "composer pkg-init" command'        . PHP_EOL;
 echo '------------------------------------------------------------' . PHP_EOL;
