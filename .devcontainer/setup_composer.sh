@@ -108,7 +108,7 @@ echoSubTitle 'VALIDATION: composer.json for production'
     exit 1
 }
 echoMsg '💡  composer.json found. Validating ...'
-composer validate || {
+composer validate ./composer.json || {
     echoMsg '❌ ERROR: Invalid composer.json format.'
     exit 1
 }
