@@ -147,7 +147,6 @@ function echoInfoVersions() {
 }
 
 function echoMsg() {
-    echo
     echo "  ${1}"
     echoHR '-'
 }
@@ -527,11 +526,15 @@ function runRequirementCheck() {
 function runTest() {
     name_test=$1
     # Run test function given
-    $2
+    result_msg=$($2 2>&1)
     result=$?
     # Echo results
-    [ $result -eq 0 ] && echoMsg "✅  ${name_test}: passed"
+    [ $result -eq 0 ] && {
+        isFlagSet 'verbose' && echo "${result_msg}"
+        echoMsg "✅  ${name_test}: passed"
+    }
     [ $result -eq 1 ] && {
+        echoError "${result_msg}"
         echoErrorHR "❌  ${name_test}: failed"
         all_tests_passed=1
     }
