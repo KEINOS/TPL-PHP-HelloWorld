@@ -716,8 +716,8 @@ composer dump-autoload
 # Set minimum test
 list_option_given="${list_option_given} phpunit"
 
-# Alert if verbose is available
-[ $mode_verbose -eq 0 ] && {
+# Alert if verbose flag is false(not 0)
+[ $mode_verbose -ne 0 ] && {
     echoAlert 'For detailed output, use option: verbose'
 }
 
