@@ -239,17 +239,24 @@ function isInsideTravis() {
 }
 
 function isInstalledPackage() {
-    path_file_bin_installed_package="./vendor/bin/${1}"
     echo -n "    - Package: ${1} ... "
+
+    name_package="${1:?"No package name defined at ${LINENO}"}"
+    which $name_package 1>/dev/null && {
+        echo 'installed'
+        return 0
+    }
+
+    path_file_bin_installed_package="./vendor/bin/${1}"
     [ -f $path_file_bin_installed_package ] || {
         echo "Package NOT FOUND at: ${path_file_bin_installed_package}"
         return 1
     }
 
-    result=$(COMPOSER=composer.dev.json $path_file_bin_installed_package --version 2>&1) || {
-        echo "Package NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
-        return 1
-    }
+    #result=$(COMPOSER='composer.dev.json' $path_file_bin_installed_package --version 2>&1) || {
+    #    echo "Package NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
+    #    return 1
+    #}
 
     echo 'installed'
     return 0

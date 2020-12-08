@@ -1,20 +1,29 @@
 {
     "name": "Dev Container for PHP7",
     "dockerFile": "Dockerfile",
+    "postCreateCommand": "sudo bash ./.devcontainer/setup_composer.sh --dev;",
     "settings": {
         "terminal.integrated.shell.linux": "/bin/bash"
     },
-    "appPort": [
-        "5963"
-    ],
-    "postCreateCommand": "php --version; composer --version; sudo bash ./.devcontainer/setup_composer.sh --dev; composer update; ls -la; echo 'export LANG=ja_JP.UTF-8' >> ~/.bashrc; echo \"export PATH=/home/vscode/.composer/vendor/bin:$PATH\" >> ~/.bashrc;",
     "remoteUser": "vscode",
+    "containerEnv": {
+        "OSH_THEME": "rana",
+        "LANG": "ja_JP.UTF-8"
+    },
+    "appPort": [
+        "9003"
+    ],
     "extensions": [
-        "ms-ceintl.vscode-language-pack-ja",
-        "felixfbecker.php-debug",
         "bmewburn.vscode-intelephense-client",
+        "davidanson.vscode-markdownlint",
+        "dotjoshjohnson.xml",
+        "felixfbecker.php-debug",
+        "foxundermoon.shell-format",
         "junstyle.php-cs-fixer",
-        "rexshi.phpdoc-comment-vscode-plugin",
-        "dotjoshjohnson.xml"
+        "mosapride.zenkaku",
+        "ms-azuretools.vscode-docker",
+        "ms-ceintl.vscode-language-pack-ja",
+        "ms-ceintl.vscode-language-pack-es",
+        "rexshi.phpdoc-comment-vscode-plugin"
     ]
 }

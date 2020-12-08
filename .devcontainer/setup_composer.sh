@@ -7,34 +7,35 @@
 # =============================================================================
 #  Functions
 # =============================================================================
-function echoHR(){
+function echoHR() {
     # Draw Horizontal Line
-    printf '%*s\n' "${SCREEN_WIDTH}" '' | tr ' ' ${1-=}
+    HR=$(printf '%*s' "${SCREEN_WIDTH}" '' | tr ' ' ${1-=})
+    echo "$HR"
 }
 
-function echoMsg () {
+function echoMsg() {
     echo "- ${1}"
 }
 
-function echoSubTitle () {
+function echoSubTitle() {
     echoHR '-'
     echo "■  $1"
     echoHR '-'
 }
 
-function echoTitle () {
+function echoTitle() {
     echo
     echoHR
     echo "  ${1}"
     echoHR
 }
 
-function isModeDev () {
+function isModeDev() {
     [ "${1}" = "--dev" ] && return 0 || return 1
 }
 
-function isPHP8 () {
-    php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);';
+function isPHP8(){
+    php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);'
     return $?
 }
 
@@ -42,6 +43,8 @@ function isPHP8 () {
 #  Settings
 # =============================================================================
 
+# Set current path
+PATH_DIR_MOUNTED=$(pwd)
 # Move to parent directory
 PATH_DIR_SCRIPT=$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)
 PATH_DIR_PARENT=$(dirname "$PATH_DIR_SCRIPT")
@@ -50,9 +53,9 @@ echo "- Current working dir: $(pwd)"
 
 # Set width
 $(tput cols 2>/dev/null 1>/dev/null) && {
-    SCREEN_WIDTH=$(tput cols);
+    SCREEN_WIDTH=$(tput cols)
 }
-SCREEN_WIDTH=${SCREEN_WIDTH:-80};
+SCREEN_WIDTH=${SCREEN_WIDTH:-80}
 
 # =============================================================================
 #  Main
@@ -61,7 +64,8 @@ SCREEN_WIDTH=${SCREEN_WIDTH:-80};
 echoTitle 'Install & Setup PHP Composer'
 
 echoSubTitle 'NOTE'
-echo "- Current path: $(pwd)"
+echo
+echo "- Current path: ${PATH_DIR_MOUNTED}"
 isModeDev $1 && {
     echo '- Option "--dev" detected. Dev dependencies will be installed.'
 } || {
@@ -83,16 +87,30 @@ which composer 1>/dev/null
     echoTitle 'Installing composer.'
     source ./.devcontainer/install_composer.sh
 }
-[ -f ~/.composer/keys.tags.pub ] && [ -f ~/.composer/keys.dev.pub ] || {
-    echoMsg '💡  Composer Public Keys not fond'
+
+[ -f "~/.composer/keys.tags.pub" ] && [ -f "~/.composer/keys.dev.pub" ] || {
+    echoMsg "💡  Composer Public Keys for $(whoami) not fond"
     echo '- Downloding pub keys for composer ...'
     mkdir -p ~/.composer
-    wget https://composer.github.io/releases.pub -O ~/.composer/keys.tags.pub && \
-    wget https://composer.github.io/snapshots.pub -O ~/.composer/keys.dev.pub || {
+    wget https://composer.github.io/releases.pub -O ~/.composer/keys.tags.pub &&
+        wget https://composer.github.io/snapshots.pub -O ~/.composer/keys.dev.pub || {
         echoMsg '❌ ERROR: Failed to download pub keys.'
         exit 1
     }
 }
+
+[ -f "/home/${SUDO_USER}/.composer/keys.tags.pub" ] && [ -f "/home/${SUDO_USER}/.composer/keys.dev.pub" ] || {
+    echoMsg "💡  Composer Public Keys for ${SUDO_USER} not fond"
+    echo "- Copying pub keys for composer from user $(whoami) .composer dir ..."
+    mkdir -p "/home/${SUDO_USER}/.composer"
+    cp -f ~/.composer/keys.tags.pub "/home/${SUDO_USER}/.composer/keys.tags.pub" &&
+        cp -f ~/.composer/keys.dev.pub "/home/${SUDO_USER}/.composer/keys.dev.pub"
+    [ "$?" -ne 0 ] && {
+        echoMsg '❌ ERROR: Failed to copy pub keys.'
+        exit 1
+    }
+}
+
 echoMsg "💡  $(composer --version)"
 
 echoSubTitle 'DIAGNOSE: Diagnosing composer'
@@ -128,17 +146,17 @@ echoMsg '✅ Valid composer format!'
 
 echoSubTitle 'Installing dependencies'
 isModeDev $1 && {
-    rm -f  ./composer.lock && echo 'Lock file removed ...'
-    rm -f  ./composer.dev.lock && echo 'Lock file removed ...'
+    echoMsg 'Removing old lock and vendor files of composer'
+    rm -f ./composer.lock && echo 'Lock file removed ...'
+    rm -f ./composer.dev.lock && echo 'Lock file removed ...'
     rm -rf ./vendor && echo 'Vendor dir removed ...'
-    ls -la ./
     echoMsg '💡  Installing WITH dev packages (./composer.dev.json)'
     isPHP8 && {
         echo '- PHP8 detected. Ignoring platform reqs.'
-        COMPOSER='composer.dev.json' composer install --verbose --ignore-platform-reqs
+        COMPOSER='composer.dev.json' composer install -vv --ignore-platform-reqs
         result=$?
     } || {
-        COMPOSER='composer.dev.json' composer install --verbose
+        COMPOSER='composer.dev.json' composer install -vv
         result=$?
     }
     # some version of psalm forgets to create sym-link
@@ -149,11 +167,11 @@ isModeDev $1 && {
     # check psalm.xml exists
     ! [ -f ./tests/conf/psalm.xml ] && {
         echoMsg 'Creating psalm conf file to: ./test/conf/psalm.xml'
-        ./vendor/bin/psalm --init source_dir="../../src" level=8 && \
-        mv -f ./psalm.xml ./test/conf/psalm.xml
+        ./vendor/bin/psalm --init source_dir="../../src" level=8 &&
+            mv -f ./psalm.xml ./test/conf/psalm.xml
     }
-    ls -la ./
 }
+
 ! isModeDev $1 && {
     export COMPOSER='composer.json'
     echoMsg '💡  Installing with NO dev packages'
