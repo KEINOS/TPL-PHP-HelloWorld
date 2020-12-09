@@ -113,7 +113,6 @@ This repo uses the following CIs. On your use, register your repo first.
 
 This repo can be develop via Docker.
 
-
 ## VS Code and Docker User
 
 If you use Visual Studio Code (a.k.a. VS Code) and have Docker installed, you can use **"Remote - Containers" extension** to develop your project over Docker container.

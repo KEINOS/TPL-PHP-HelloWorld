@@ -34,7 +34,7 @@ function isModeDev() {
     [ "${1}" = "--dev" ] && return 0 || return 1
 }
 
-function isPHP8(){
+function isPHP8() {
     php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);'
     return $?
 }
@@ -42,6 +42,8 @@ function isPHP8(){
 # =============================================================================
 #  Settings
 # =============================================================================
+
+WORK_USER="${SUDO_USER:-$(whoami)}"
 
 # Set current path
 PATH_DIR_MOUNTED=$(pwd)
@@ -64,7 +66,7 @@ SCREEN_WIDTH=${SCREEN_WIDTH:-80}
 echoTitle 'Install & Setup PHP Composer'
 
 echoSubTitle 'NOTE'
-echo
+echo "- Who am I: $(whoami)"
 echo "- Current path: ${PATH_DIR_MOUNTED}"
 isModeDev $1 && {
     echo '- Option "--dev" detected. Dev dependencies will be installed.'
@@ -81,11 +83,22 @@ which php 1>/dev/null
 echoMsg "💡  $(php -v)"
 
 echoSubTitle 'CHECK: Composer bin'
-which composer 1>/dev/null
-[ $? -ne 0 ] && {
+which composer 1>/dev/null || {
     echo '- Composer not found.'
     echoTitle 'Installing composer.'
     source ./.devcontainer/install_composer.sh
+}
+
+which composer 1>/dev/null || {
+    echoMsg 'ERROR: Failed to install composer.'
+    exit 1
+}
+
+# Downgrade PHP Composer from v2 to v1.
+# This is needed to mantain the test package's compatibility. This might change in the future.
+composer self-update 1.10.17 || {
+    echoMsg 'ERROR: Failed to downgrade composer.'
+    exit 1
 }
 
 [ -f "~/.composer/keys.tags.pub" ] && [ -f "~/.composer/keys.dev.pub" ] || {
@@ -99,18 +112,17 @@ which composer 1>/dev/null
     }
 }
 
-[ -f "/home/${SUDO_USER}/.composer/keys.tags.pub" ] && [ -f "/home/${SUDO_USER}/.composer/keys.dev.pub" ] || {
-    echoMsg "💡  Composer Public Keys for ${SUDO_USER} not fond"
+[ -f "/home/${WORK_USER}/.composer/keys.tags.pub" ] && [ -f "/home/${WORK_USER}/.composer/keys.dev.pub" ] || {
+    echoMsg "💡  Composer Public Keys for ${WORK_USER} not fond"
     echo "- Copying pub keys for composer from user $(whoami) .composer dir ..."
-    mkdir -p "/home/${SUDO_USER}/.composer"
-    cp -f ~/.composer/keys.tags.pub "/home/${SUDO_USER}/.composer/keys.tags.pub" &&
-        cp -f ~/.composer/keys.dev.pub "/home/${SUDO_USER}/.composer/keys.dev.pub"
+    mkdir -p "/home/${WORK_USER}/.composer"
+    cp -f ~/.composer/keys.tags.pub "/home/${WORK_USER}/.composer/keys.tags.pub" &&
+        cp -f ~/.composer/keys.dev.pub "/home/${WORK_USER}/.composer/keys.dev.pub"
     [ "$?" -ne 0 ] && {
         echoMsg '❌ ERROR: Failed to copy pub keys.'
         exit 1
     }
 }
-
 echoMsg "💡  $(composer --version)"
 
 echoSubTitle 'DIAGNOSE: Diagnosing composer'

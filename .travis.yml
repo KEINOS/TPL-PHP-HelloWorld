@@ -5,8 +5,7 @@ env:
   - PHAN_DISABLE_XDEBUG_WARN=1
   - COMPOSER=composer.dev.json
 
-install: /bin/bash ./.devcontainer/setup_composer.sh --dev && sudo snap install tree
-
+install: sudo snap install tree && /bin/bash ./.devcontainer/setup_composer.sh --dev
 matrix:
   include:
     # PHP 7.0 support deprecated. phpstan/extension-installer supports only ^7.1

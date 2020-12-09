@@ -1,5 +1,5 @@
 # [Choice] PHP version: 7, 7.4, 7.3
-ARG VARIANT="7"
+ARG VARIANT="7.3"
 
 # Main stage
 # -----------------------------------------------------------------------------
@@ -51,19 +51,12 @@ RUN sudo pecl install ast \
   && path_dir_so_ast="$(php -r "echo ini_get('extension_dir');")/ast.so" \
   && echo "extension=${path_dir_so_ast}" > /usr/local/etc/php/conf.d/ast.ini
 
-# Downgrade PHP Composer from v2 to v1.
-# This is needed to mantain the test package's compatibility. This might change in the future.
-RUN \
-  sudo composer self-update 1.10.17 && composer --version
-
 # Copy the welcome message script for bash
 COPY welcome.sh /welcome.sh
 
 # Gloval initialization of composer and set path and welcome message
 USER vscode
 RUN composer global init --stability=dev --quiet \
-  && composer config -g repositories.packagist composer https://packagist.jp \
-  && composer global require hirak/prestissimo \
   && echo 'export PATH="${HOME}/.composer/vendor/bin:${PATH}"' >> ~/.bashrc \
   && echo 'export PATH="$(pwd)/vendor/bin:${PATH}"' >> ~/.bashrc \
   && echo '/bin/bash /welcome.sh' >> ~/.bashrc
