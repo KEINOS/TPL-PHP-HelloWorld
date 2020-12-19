@@ -721,7 +721,7 @@ isFlagSet 'docker' && {
 
 # Update autoload
 echoAlert 'Dumping composer autoload files'
-composer dump-autoload
+composer dump-autoload --no-plugins
 
 # Set minimum test
 list_option_given="${list_option_given} phpunit"

@@ -8,13 +8,12 @@ env:
 install: sudo snap install tree && /bin/bash ./.devcontainer/setup_composer.sh --dev
 matrix:
   include:
-    # PHP 7.0-7.2 support deprecated. Many test packages only supports ^7.3
+    # PHP 7.0-7.2support deprecated. Many test packages supports only >= 7.3.0
     #- php: 7.0
     #  dist: xenial
     #- php: 7.1
     #  dist: bionic
-    # Default PHP version in macOS HighSierra(10.13.6) and Mojave(10.14.4)
-    #- php: 7.1.23
+    #- php: 7.1.33
     #  dist: xenial
     #- php: 7.2
     #  dist: bionic

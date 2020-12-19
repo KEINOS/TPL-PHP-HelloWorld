@@ -20,7 +20,7 @@
 ini_set("memory_limit", "200M");
 
 echo '------------------------------------------------------------' . PHP_EOL;
-echo ' Initializing package via "composer pkg-init" command'        . PHP_EOL;
+echo ' Initializing package' . PHP_EOL;
 echo '------------------------------------------------------------' . PHP_EOL;
 
 const DIR_SEP = DIRECTORY_SEPARATOR;

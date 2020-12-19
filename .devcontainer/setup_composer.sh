@@ -165,7 +165,7 @@ isModeDev $1 && {
     echoMsg '💡  Installing WITH dev packages (./composer.dev.json)'
     isPHP8 && {
         echo '- PHP8 detected. Ignoring platform reqs.'
-        COMPOSER='composer.dev.json' composer install -vv --ignore-platform-reqs
+        COMPOSER='composer.dev.json' composer install -vv --ignore-platform-reqs --no-plugins
         result=$?
     } || {
         COMPOSER='composer.dev.json' composer install -vv
