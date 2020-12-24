@@ -21,12 +21,31 @@
         "issues": "https://github.com/KEINOS/TPL-PHP-HelloWorld/issues",
         "source": "https://github.com/KEINOS/TPL-PHP-HelloWorld"
     },
+    "bin": ["bin/HelloWorld"],
     "require": {
-        "php": "^8.0 || ^7.1",
+        "php": "^8.0 || ^7.3",
         "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "humbug/box": "@stable",
+        "bamarni/composer-bin-plugin": "@stable",
+        "phan/phan": "@stable",
+        "php-coveralls/php-coveralls": "@stable",
+        "phpbench/phpbench": "@dev",
+        "phpmd/phpmd": "@stable",
+        "phpstan/extension-installer": "@stable",
+        "phpstan/phpstan": "@stable",
+        "phpunit/phpunit": "@stable",
+        "psalm/phar": "4.1.1",
+        "squizlabs/php_codesniffer": "@stable"
     },
     "config": {
         "sort-packages": true
+    },
+    "extra": {
+        "bamarni-bin": {
+            "target-directory": "vendor/bin"
+        }
     },
     "autoload": {
         "psr-4": {
@@ -36,13 +55,31 @@
             "src/functions.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "KEINOS\\Tests\\": [
+                "tests",
+                "tests/conf"
+            ]
+        }
+    },
     "scripts" :{
         "test": [
+            "Composer\\Config::disableProcessTimeout",
             "./tests/run-tests.sh"
         ],
-        "test-init": [
+        "bench": [
+            "./vendor/bin/phpbench run --report=aggregate --report=compare ./tests/bench"
+        ],
+        "compile": [
+            "COMPOSER='composer.json' box compile --config=./.devcontainer/box.json"
+        ],
+        "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "docker-compose --file docker-compose.dev.yml build initialize && docker-compose --file docker-compose.dev.yml run --rm initialize < /dev/tty"
+            "docker-compose run --rm --entrypoint='/bin/sh' --workdir='/app' -v $(pwd):/app dev < /dev/tty"
+        ],
+        "shellcheck": [
+            "find . -type f \\( -name '*.sh' \\) ! -path '*/vendor/*' | xargs shellcheck -x -s sh"
         ]
     }
 }

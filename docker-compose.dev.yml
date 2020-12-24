@@ -7,10 +7,10 @@ services:
       context: .
       dockerfile: ./tests/.testcontainer/Dockerfile
       args:
-        - NAME_IMAGE=php:7.4.3-cli-alpine
+        - NAME_IMAGE=php:8.0.0-cli-alpine
     environment:
       - COVERALLS_REPO_TOKEN
-      - COMPOSER=composer.dev.json
+      - COMPOSER=composer.json
     volumes:
       - ./.git/:/app/.git
       - ./src:/app/src

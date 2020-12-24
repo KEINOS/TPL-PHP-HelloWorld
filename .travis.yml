@@ -3,21 +3,22 @@ language: php
 env:
   global:
   - PHAN_DISABLE_XDEBUG_WARN=1
-  - COMPOSER=composer.dev.json
+  - COMPOSER=composer.json
 
-install: /bin/bash ./.devcontainer/setup_composer.sh --dev && sudo snap install tree
-
+install: sudo snap install tree && /bin/bash ./.devcontainer/setup_composer.sh --dev
 matrix:
   include:
-    # PHP 7.0 support deprecated. phpstan/extension-installer supports only ^7.1
+    # PHP 7.0-7.2support deprecated. Many test packages supports only >= 7.3.0
     #- php: 7.0
     #  dist: xenial
-    - php: 7.1
-      dist: bionic
-    # Default PHP version in macOS HighSierra(10.13.6) and Mojave(10.14.4)
-    - php: 7.1.23
-      dist: xenial
-    - php: 7.2
+    #- php: 7.1
+    #  dist: bionic
+    #- php: 7.1.33
+    #  dist: xenial
+    #- php: 7.2
+    #  dist: bionic
+    # Default PHP version in macOS Catalina(10.15.7) and later
+    - php: 7.3.11
       dist: bionic
     - php: 7.3
       dist: bionic

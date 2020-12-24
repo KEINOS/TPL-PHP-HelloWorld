@@ -5,6 +5,7 @@
     <!-- Target directories -->
     <file>../../src</file>
     <file>../../tests</file>
+    <file>../../.devcontainer</file>
 
     <!-- Exclude file/dir -->
     <exclude-pattern>*.cache</exclude-pattern>
@@ -13,8 +14,10 @@
     <rule ref="PSR2"/>
     <rule ref="PSR12"/>
 
+    <!-- Show colors -->
     <arg name="colors"/>
-    <arg value="p"/>
+    <!-- Show sniff and progress -->
+    <arg value="sp"/>
 
     <ini name="memory_limit" value="128M"/>
 </ruleset>

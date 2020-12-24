@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 /**
  * This script will re-write the file name and contents from the template to user provided name.
  *
@@ -16,11 +17,13 @@
  *   Check "scripts" key value in `/composer.json`.
  */
 
+// phpcs:disable PSR1.Files.SideEffects
+
 // Avoid memory size exhaustion. Issue fix: https://github.com/KEINOS/TPL-PHP-HelloWorld/issues/51
 ini_set("memory_limit", "200M");
 
 echo '------------------------------------------------------------' . PHP_EOL;
-echo ' Initializing package via "composer pkg-init" command'        . PHP_EOL;
+echo ' Initializing package' . PHP_EOL;
 echo '------------------------------------------------------------' . PHP_EOL;
 
 const DIR_SEP = DIRECTORY_SEPARATOR;
@@ -29,13 +32,13 @@ const DIR_SEP = DIRECTORY_SEPARATOR;
 //  Preparation
 // ============================================================================
 
-// List of files that are expected to exist in the root dir of this repo/package.
+// List of files that are expected to exist in the root dir of this package due
+// to ensure detecting the right path.
 $list_files_in_root_expect = [
     'README.md',
     'LICENSE',
     'Dockerfile',
     'composer.json',
-    'composer.dev.json',
     'src',
 ];
 $path_dir_package = getPathDirRootOfPackage($list_files_in_root_expect);
@@ -126,12 +129,12 @@ try {
 
     dumpAutoloadComposer();
 
-    if (! removeInitializationTestFromTravisYamlFile()) {
+    if (!removeInitializationTestFromTravisYamlFile()) {
         $msg_error = 'Error to rewrite .travis.yml to exclude initialization test.';
         throw new \RuntimeException($msg_error);
     }
     echo '- YAML file ".travis.yml" over-written. Current file is:' . PHP_EOL
-       . file_get_contents(__DIR__ . '/../.travis.yml');
+        . file_get_contents(__DIR__ . '/../.travis.yml');
     foreach ($list_path_files_delete as $path_file_delete) {
         if (is_file($path_file_delete)) {
             unlink($path_file_delete);
@@ -163,8 +166,8 @@ function askAgainIfSure($string)
     if ($result === 'q') {
         throw new \RuntimeException(
             "Initialization aborted." . PHP_EOL .
-            "- Vendor name and namespaces NOT changed." . PHP_EOL .
-            "- You will need to change them your own." . PHP_EOL
+                "- Vendor name and namespaces NOT changed." . PHP_EOL .
+                "- You will need to change them your own." . PHP_EOL
         );
     }
 
@@ -179,11 +182,12 @@ function askUserNameVendor()
         echo '-----------------------' . PHP_EOL;
         echo ' Your name/Vendor name ' . PHP_EOL;
         echo '-----------------------' . PHP_EOL;
-        echo "  NOTE: This will replace all the string \"${name_vendor_from}\" to yours. Including namespaces." . PHP_EOL;
+        echo "  NOTE: This will replace all the string \"${name_vendor_from}\" to yours.";
+        echo " Including namespaces." . PHP_EOL;
         echo '- Input your name/vendor name: ';
         $name_vendor = trim(fgets(STDIN));
 
-        if (! empty($name_vendor)) {
+        if (!empty($name_vendor)) {
             echo PHP_EOL . 'Vendor name will be: ', $name_vendor, PHP_EOL;
             $name_vendor = (askAgainIfSure($name_vendor)) ? $name_vendor : '';
         } else {
@@ -297,10 +301,10 @@ function getListPathFilesAll(string $path, array $list_exclude): array
             }
 
             // Returned files must be writable
-            if (! is_writable($path_file)) {
+            if (!is_writable($path_file)) {
                 throw new \RuntimeException(
                     'Given path is not writable.' . PHP_EOL .
-                    '- Path: ' . $path_file . PHP_EOL
+                        '- Path: ' . $path_file . PHP_EOL
                 );
             }
 
@@ -331,17 +335,17 @@ function getNameVendor()
 {
     // STDIN
     $name_vendor = trim(getNameFromSTDIN());
-    if (! empty($name_vendor)) {
+    if (!empty($name_vendor)) {
         return $name_vendor;
     }
     // ARG
     $name_vendor = trim(getNameFromArg());
-    if (! empty($name_vendor)) {
+    if (!empty($name_vendor)) {
         return $name_vendor;
     }
     // User input
     $name_vendor = askUserNameVendor();
-    if (! empty($name_vendor)) {
+    if (!empty($name_vendor)) {
         return $name_vendor;
     }
 }
@@ -353,8 +357,9 @@ function getPathDirRootOfPackage($list_files_in_root)
 
     foreach ($list_files_in_root as $name_file) {
         $path = $path_dir_parent . DIR_SEP . $name_file;
-        if (! \file_exists($path)) {
-            throw new \RuntimeException("Expected file in root dir of the package is missing.\n Missing file: ${path}\n");
+        if (!\file_exists($path)) {
+            $msg_error = "Expected file in root dir of the package is missing.\n Missing file: ${path}\n";
+            throw new \RuntimeException($msg_error);
         }
     }
 
@@ -371,10 +376,10 @@ function getPathDirReal(string $path): string
     if ($path === false) {
         throw new InvalidArgumentException('Invalid path given. Path: ' . $path);
     }
-    if (! is_dir($path)) {
+    if (!is_dir($path)) {
         throw new InvalidArgumentException('Given path is not a directory. Path: ' . $path);
     }
-    if (! is_readable($path)) {
+    if (!is_readable($path)) {
         throw new \RuntimeException('Given path is not readable. Path: ' . $path);
     }
 
@@ -388,11 +393,12 @@ function getPathDirReal(string $path): string
 function removeInitializationTestFromTravisYamlFile()
 {
     $path_file_yaml_travis = __DIR__ .  '/../.travis.yml';
-    if (! file_exists($path_file_yaml_travis)) {
+    if (!file_exists($path_file_yaml_travis)) {
         throw new \RuntimeException('File not found at: ' . $path_file_yaml_travis);
     }
 
-    $search  = "  - php ./.devcontainer/initialize_package.php MyVendorName\n  - /bin/bash ./tests/run-tests.sh local all";
+    $search  = "  - php ./.devcontainer/initialize_package.php MyVendorName\n";
+    $search .= "  - /bin/bash ./tests/run-tests.sh local all";
     $replace = '';
     $subject = file_get_contents($path_file_yaml_travis);
     $data    = str_replace($search, $replace, $subject);
@@ -413,14 +419,14 @@ function removeScriptInitFromJson(string $path_file_json_composer)
     if ($json_composer === false) {
         throw new \RuntimeException('Failed to re-encode composer.json.');
     }
-    if(file_put_contents($path_file_json_composer, $json_composer) === false){
+    if (file_put_contents($path_file_json_composer, $json_composer) === false) {
         throw new \RuntimeException('Failed to write composer.json.');
     }
 }
 
 function rewriteFileContents(string $path_file, array $list_before_after)
 {
-    if (! is_file($path_file)) {
+    if (!is_file($path_file)) {
         throw new \RuntimeException('Given path is not a file. Path: ' . $path_file);
     }
 
@@ -473,8 +479,8 @@ function rewriteFileName($path_file_from, $name_file_from, $name_file_to)
     if ($result === false) {
         throw new \RuntimeException(
             'Fail to change file name.' . PHP_EOL .
-            '- Original file path: ' . $path_file_from . PHP_EOL .
-            '- Name to be replaced: ' . $name_file_to . PHP_EOL
+                '- Original file path: ' . $path_file_from . PHP_EOL .
+                '- Name to be replaced: ' . $name_file_to . PHP_EOL
         );
     }
 }

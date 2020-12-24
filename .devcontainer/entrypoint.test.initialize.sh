@@ -7,16 +7,16 @@
 #  and then the test. Also note that this script will be deleted by the
 #  "initialize_package.php" script.
 
-php /app/.devcontainer/initialize_package.php MyVendorName && \
-composer install && \
-composer dump-autoload && \
-composer test all
-[ $? -eq 0 ] && {
+if php /app/.devcontainer/initialize_package.php MyVendorName &&
+    composer install &&
+    composer dump-autoload &&
+    composer test all;
+then
     echo
     echo '✅  Initialization script seems to work fine.'
     exit 0
-} || {
+else
     echo
     echo '❎  Failed to run initialization script.'
     exit 1
-}
+fi
