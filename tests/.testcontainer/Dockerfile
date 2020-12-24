@@ -3,6 +3,7 @@
 ARG NAME_IMAGE=php:8.0.0-cli-alpine
 ARG COVERALLS_RUN_LOCALLY=1
 ARG COVERALLS_REPO_TOKEN
+ARG COMPOSER='composer.dev.json'
 
 FROM ${NAME_IMAGE}
 
@@ -14,7 +15,7 @@ COPY ./.devcontainer /app/.devcontainer
 COPY ./*.json /app/
 
 ENV COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
-ENV COMPOSER='composer.dev.json'
+ENV COMPOSER="${COMPOSER}"
 
 WORKDIR /app
 RUN apk --no-cache --update add \

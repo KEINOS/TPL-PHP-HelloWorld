@@ -15,7 +15,7 @@ if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]; then
     exit 1
 fi
 
-php composer-setup.php --quiet --install-dir=$(dirname $(which php)) --filename=composer &&
+php composer-setup.php --quiet --install-dir="$(dirname "$(which php)")" --filename=composer &&
     composer --version &&
     composer diagnose &&
     rm composer-setup.php &&

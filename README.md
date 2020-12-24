@@ -43,11 +43,11 @@ This repo uses the following CIs. On your use, register your repo first.
 
 1. Create a new copy.
 
-    Choose one of the below command that suits you, to create a new project following your project name. (Ex. MyNewProject)
+    Choose one of the below commands that suits you, to create a new project following your project name. (Ex. MyNewProject)
 
     ```bash
     # For composer user (No Docker)
-    COMPOSER=composer.dev.json composer create-project keinos/hello-world-tpl MyNewProject
+    COMPOSER=composer.json composer create-project keinos/hello-world-tpl MyNewProject
     cd MyNewProject
     ```
 
@@ -81,8 +81,6 @@ This repo uses the following CIs. On your use, register your repo first.
     ```bash
     composer test all verbose
     ```
-
-    **Note** that `composer.json` is for production. For development in local, use `composer.dev.json`. Rename it temporary or set `COMPOSER` env variable as `COMPOSER=composer.dev.json`.
 
 4. Initial commit.
 

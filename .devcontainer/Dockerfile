@@ -1,5 +1,12 @@
 # [Choice] PHP version: 7, 7.4, 7.3
-ARG VARIANT="7.3"
+ARG VARIANT='7.3'
+# Install node for VS Code extensions
+ARG INSTALL_NODE="true"
+ARG NODE_VERSION="lts/*"
+
+# Default composer conf file
+ARG COMPOSER='composer.json'
+ARG COMPOSER_VERSION='1.10.19'
 
 # Main stage
 # -----------------------------------------------------------------------------
@@ -10,19 +17,29 @@ ENV \
   # This container uses .oh-my-bash for other themes see: https://github.com/ohmybash/oh-my-bash/wiki/Themes
   # VSCode User NOTE: VSCode will override this value. Set the value in devcontainer.json instead.
   OSH_THEME="rana" \
-  # Set default composer conf file as below
-  COMPOSER='composer.dev.json'
-
-# Install Node.js(Needs for some extensions)
-ARG INSTALL_NODE="true"
-ARG NODE_VERSION="lts/*"
-RUN if [ "${INSTALL_NODE}" = "true" ]; then su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
+  # Set default composer conf file
+  COMPOSER="$COMPOSER" \
+  # Set composer version to upgrade/downgrade
+  COMPOSER_VERSION="$COMPOSER_VERSION"
 
 # Install additional OS packages.
-# RUN apt-get update \
-#     && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends \
-#       <your-package-list-here>
+RUN apt-get update \
+  && export DEBIAN_FRONTEND=noninteractive \
+  && apt-get -y install --no-install-recommends \
+    xz-utils \
+  # Install shellcheck, the static analysys tool for shell scripts
+  && wget -P tmp_install_folder/ https://github.com/koalaman/shellcheck/releases/download/latest/shellcheck-latest.linux.x86_64.tar.xz \
+  && tar xvf tmp_install_folder/shellcheck-latest.linux.x86_64.tar.xz -C tmp_install_folder \
+  && cp tmp_install_folder/shellcheck-latest/shellcheck /usr/bin/shellcheck \
+  && rm -r tmp_install_folder
+
+# Install Node.js(Needs for some extensions)
+ARG INSTALL_NODE
+ARG NODE_VERSION
+RUN if [ "${INSTALL_NODE}" = "true" ]; then su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
+
+# [Optional] Uncomment this line to install global node packages.
+# RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
 
 # Avoid bash warning: "setlocale: LC_CTYPE: cannot change locale"
 RUN \
@@ -60,6 +77,3 @@ RUN composer global init --stability=dev --quiet \
   && echo 'export PATH="${HOME}/.composer/vendor/bin:${PATH}"' >> ~/.bashrc \
   && echo 'export PATH="$(pwd)/vendor/bin:${PATH}"' >> ~/.bashrc \
   && echo '/bin/bash /welcome.sh' >> ~/.bashrc
-
-# [Optional] Uncomment this line to install global node packages.
-# RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1

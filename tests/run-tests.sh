@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 # =============================================================================
 #  Test script.
 #
-#  This file should be called via "composer test" command. See "scripts" in
-#  "/composer.json".
+#  This file should be:
+#    1. Called via "composer test" command. See "scripts" in "/composer.json".
+#    2. Compatible with POSIX/bourne shell and not bash. Use `shellcheck` cmd.
+#       $ shellcheck -x -s sh ./tests/run-tests.sh
 # =============================================================================
 
 OPTIONS='requirement diagnose phpcs phpmd phpcbf phpunit phpstan psalm phan coveralls'
@@ -70,10 +72,11 @@ HEREDOC
 #    - Constant variables that won't be changed are in "CAPITAL_SNAKE_CASES".
 #    - Global variables that might be changed are in "lower_snake_cases".
 #    - Function names are in "lowerCamelCases()".
-#    - "getter" functions begins with "get" and must be used as:
+#    - "getter" functions begins with "get" and must be used as below to capture
+#      the echo(STDOUT/STDERR) output:
 #        foo=$(getMyValue)
 # -----------------------------------------------------------------------------
-function buildContainerTest() {
+buildContainerTest() {
     echoTitle 'Rebuilding test container'
 
     isInsideContainer && {
@@ -87,13 +90,13 @@ function buildContainerTest() {
     }
 
     echo '- Building container ...'
-    docker-compose -f docker-compose.dev.yml build --no-cache $NAME_SERVICE_TEST || {
+    docker-compose -f docker-compose.dev.yml build --no-cache "$NAME_SERVICE_TEST" || {
         echoError '❌  Fail to build test container.'
         exit 1
     }
 }
 
-function buildPhp5() {
+buildPhp5() {
     echo '- Building PHP5 test container image ...'
     name_image_php5=$(getNameImagePhp5)
     name_tag_php5=$(getNameTagPhp5)
@@ -104,89 +107,90 @@ function buildPhp5() {
         -t "${name_image_php5}:${name_tag_php5}" \
         --file ./tests/.testcontainer/Dockerfile.php5 \
         .
-    [ $? -ne 0 ] && {
+    test $? -ne 0 && {
         echoError '❌  Failed to build image'
         exit 1
     }
     return 0
 }
 
-function echoAlert() {
+echoAlert() {
     echoHR '-'
     echo "💡  ${1}"
     echoHR '-'
 }
 
-function echoError() {
+echoError() {
     echo >&2 "${1}"
 }
-function echoErrorHR() {
+
+echoErrorHR() {
     echoHR >&2 '-'
     echo >&2 "  ${1}"
     echoHR >&2 '-'
 }
 
-function echoFlagOptions() {
+echoFlagOptions() {
     echo "${OPTIONS}"
 }
 
-function echoHelpOption() {
+echoHelpOption() {
     echo '- Available Option Flags:'
     echo "    $(echoFlagOptions) (To test all use: all)"
     echo "    (optional for auto fix) psalter phpcbf"
 }
 
-function echoHR() {
+echoHR() {
     # Draw Horizontal Line
-    printf '%*s\n' "${SCREEN_WIDTH}" '' | tr ' ' ${1-=}
+    printf '%*s\n' "${SCREEN_WIDTH}" '' | tr ' ' "${1-=}"
 }
 
-function echoInfoVersions() {
-    echo '-' $(php --version | head -1)
-    echo '-' $(composer --version)
+echoInfoVersions() {
+    echo "- $(php --version | head -1)"
+    echo "- $(composer --version)"
 }
 
-function echoMsg() {
+echoMsg() {
     echo "  ${1}"
     echoHR '-'
 }
 
-function echoTitle() {
+echoNoNewLine() {
+    printf '%s' "$1"
+}
+
+echoTitle() {
     echo
     echoHR
     echo "  ${1}"
     echoHR
 }
 
-function getNameImagePhp5() {
+getNameImagePhp5() {
     echo "php5_test"
 }
 
-function getNameTagPhp5() {
+getNameTagPhp5() {
     echo "local"
 }
 
-function getPathParent() {
-    # Use this function by "x=$(getPathParent)"
-    echo "$(dirname "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)")"
+getPathParent() {
+    dirname "$(getPathScript)"
 }
 
-function getPathScript() {
-    # Use this function by "x=$(getPathScript)"
-    echo "$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)"
+getPathScript() {
+    echo "${PATH_DIR_SCRIPT:?'Path variable must be set before call.'}"
 }
-
-function getWidthScreen() {
-    # Use this function by "x=$(getWidthScreen)"
+getWidthScreen() {
     SCREEN_WIDTH_DEFAULT=80
-    $(tput cols 2>/dev/null 1>/dev/null) && {
+    eval "$(tput cols 2>/dev/null 1>/dev/null)" && {
         SCREEN_WIDTH=$(tput cols)
     }
     SCREEN_WIDTH=${SCREEN_WIDTH:-$SCREEN_WIDTH_DEFAULT}
-    echo $SCREEN_WIDTH
+    echo "$SCREEN_WIDTH"
 }
 
-function isComposerInstalled() {
+isComposerInstalled() {
     composer --version 2>/dev/null 1>/dev/null && {
         return 0
     }
@@ -194,7 +198,7 @@ function isComposerInstalled() {
     return 1
 }
 
-function isDockerAvailable() {
+isDockerAvailable() {
     docker version 2>/dev/null 1>/dev/null && {
         return 0
     }
@@ -202,7 +206,7 @@ function isDockerAvailable() {
     return 1
 }
 
-function isDockerInstalled() {
+isDockerInstalled() {
     which docker 2>/dev/null 1>/dev/null && {
         return 0
     }
@@ -210,13 +214,14 @@ function isDockerInstalled() {
     return 1
 }
 
-function isFlagSet() {
-    option=$(tr '[A-Z]' '[a-z]' <<<"${1}")
-    echo "${list_option_given}" | grep $option 2>/dev/null 1>/dev/null
+isFlagSet() {
+    #option=$(tr 'A-Z' 'a-z' <<<"${1}")
+    option=$(printf '%s' "${1}" | tr '[:upper:]' '[:lower:]')
+    echo "$list_option_given" | grep "$option" 2>/dev/null 1>/dev/null
     return $?
 }
 
-function isInsideContainer() {
+isInsideContainer() {
     isInsideTravis && {
         echoAlert 'You are running inside TravisCI.'
         return 0
@@ -230,44 +235,41 @@ function isInsideContainer() {
     return 1
 }
 
-function isInsideTravis() {
-    echo $(cd ~/ && pwd) | grep travis 1>/dev/null 2>/dev/null && {
+isInsideTravis() {
+    [ "$USER" = 'travis' ] || return 1
+    [ "$CI" = 'true' ] || return 1
+
+    ls -a "${HOME}/.travis" 1>/dev/null 2>/dev/null && {
         return 0
     }
-
     return 1
 }
 
-function isInstalledPackage() {
-    echo -n "    - Package: ${1} ... "
+isInstalledPackage() {
+    echoNoNewLine "    - Package: ${1} ... "
 
     name_package="${1:?"No package name defined at ${LINENO}"}"
-    which $name_package 1>/dev/null && {
+    which "$name_package" 1>/dev/null && {
         echo 'installed'
         return 0
     }
 
     path_file_bin_installed_package="./vendor/bin/${1}"
-    [ -f $path_file_bin_installed_package ] || {
+    [ -f "$path_file_bin_installed_package" ] || {
         echo "Package NOT FOUND at: ${path_file_bin_installed_package}"
         return 1
     }
-
-    #result=$(COMPOSER='composer.dev.json' $path_file_bin_installed_package --version 2>&1) || {
-    #    echo "Package NOT FOUND at: ${path_file_bin_installed_package} Msg: ${result}"
-    #    return 1
-    #}
 
     echo 'installed'
     return 0
 }
 
-function isPHP8() {
+isPHP8() {
     php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);'
     return $?
 }
 
-function isRequirementsInstallable() {
+isRequirementsInstallable() {
     flag_installable_requirements=1
     isComposerInstalled || {
         # composer is a must requirement
@@ -275,25 +277,25 @@ function isRequirementsInstallable() {
         return 1
     }
 
-    [ "${1}" = "verbose" ] && {
+    if [ "${1}" = "verbose" ]; then
         indent='    '
-        result=$(COMPOSER=composer.dev.json composer install --dry-run 2>&1 3>&1)
+        result=$(COMPOSER=composer.json composer install --dry-run 2>&1 3>&1)
         flag_installable_requirements=$?
         echo
         echo "${result}" |
-            while read line; do
+            while read -r line; do
                 echo "${indent}${line}"
             done
         echo
-    } || {
-        COMPOSER=composer.dev.json composer install --dry-run 2>/dev/null 1>/dev/null
+    else
+        COMPOSER=composer.json composer install --dry-run 2>/dev/null 1>/dev/null
         flag_installable_requirements=$?
-    }
+    fi
 
     return $flag_installable_requirements
 }
 
-function isRequirementsInstalled() {
+isRequirementsInstalled() {
 
     # To see which packages are not install run with 'verbose' option
     isInstalledPackage phpunit &&
@@ -308,48 +310,43 @@ function isRequirementsInstalled() {
     return 1
 }
 
-function isXdebugAvailable() {
+isXdebugAvailable() {
     php --version | grep Xdebug 2>/dev/null 1>/dev/null && {
         return 0
     }
-
     return 1
 }
 
-function loadConfCoverall() {
+# Loads Token for COVERALLS
+loadConfCoverall() {
     path_file_conf_coveralls='./tests/conf/COVERALLS.env'
     if [ -f "${path_file_conf_coveralls}" ]; then
-        {
-            # Load Token for COVERALLS
-            source $path_file_conf_coveralls
-            export COVERALLS_RUN_LOCALLY=$COVERALLS_RUN_LOCALLY
-            export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
-        }
+        # shellcheck source=./tests/conf/COVERALLS.env
+        . "$path_file_conf_coveralls"
+        export COVERALLS_RUN_LOCALLY="$COVERALLS_RUN_LOCALLY"
+        export COVERALLS_REPO_TOKEN="$COVERALLS_REPO_TOKEN"
     else
-        {
-            echo '- Conf file not found at:' $path_file_conf_coveralls
-        }
+        echo '- Conf file not found at:' "$path_file_conf_coveralls"
     fi
 }
 
-function removeContainerPrune() {
+removeContainerPrune() {
     echo '- Removing prune container and images ...'
     docker container prune -f 1>/dev/null
     docker image prune -f 1>/dev/null
 }
 
-function runCoveralls() {
+runCoveralls() {
     echoTitle 'TEST: Code Coverage'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'coveralls' && {
         return 2
     }
     # Check Xdebug extension
-    php -v | grep Xdebug 1>/dev/null 2>/dev/null
-    [ $? -eq 0 ] || {
-        echo '- Xdebug extension is not enabled. Skipping the test.'
+    if ! php -v | grep Xdebug 1>/dev/null 2>/dev/null; then
+        echo >&2 '- Xdebug extension is not enabled. Skipping the test.'
         return 2
-    }
+    fi
 
     # Load token from conf files.
     loadConfCoverall
@@ -364,39 +361,54 @@ function runCoveralls() {
     setOptionCoverallsDryRun
 
     echo '- Running COVERALLS'
-    ./vendor/bin/php-coveralls \
-        --config=./tests/conf/coveralls.yml \
-        --json_path=./report/coveralls-upload.json \
-        --verbose \
-        --no-interaction \
-        $option_dry_run
-    [ $? -eq 0 ] && return 0 || return 1
+    # shellcheck disable=SC2086
+    if
+        ./vendor/bin/php-coveralls \
+            --config=./tests/conf/coveralls.yml \
+            --json_path=./report/coveralls-upload.json \
+            --verbose \
+            --no-interaction \
+            $option_dry_run # fix: https://github.com/vimeo/psalm/issues/4888
+    then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runDiagnose() {
+runDiagnose() {
     echoTitle 'DIAGNOSE: composer'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'diagnose' && {
         return 2
     }
-    composer diagnose
-    [ $? -eq 0 ] && return 0 || return 1
+    if composer diagnose; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runPhan() {
+runPhan() {
     echoTitle 'TEST: Phan'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'phan' && {
         return 2
     }
-    PHAN_DISABLE_XDEBUG_WARN=1 \
+    if PHAN_DISABLE_XDEBUG_WARN=1 \
         ./vendor/bin/phan \
         --allow-polyfill-parser \
-        --config-file ./tests/conf/phan.php
-    [ $? -eq 0 ] && return 0 || return 1
+        --config-file ./tests/conf/phan.php; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runPhp5() {
+runPhp5() {
     isDockerAvailable || {
         echoError 'Docker is not available to run.'
         exit 1
@@ -410,65 +422,79 @@ function runPhp5() {
     echoTitle 'TEST: Running tests on PHP5 via container'
     name_image_php5=$(getNameImagePhp5)
     name_tag_php5=$(getNameTagPhp5)
-    docker image ls | grep $name_image_php5 | grep $name_tag_php5 1>/dev/null 2>/dev/null
-    [ $? -ne 0 ] && {
+    if ! docker image ls | grep "$name_image_php5" | grep "$name_tag_php5" 1>/dev/null 2>/dev/null; then
         buildPhp5
-    }
+    fi
 
     echo '- Running container ...'
     docker run \
         --rm \
-        -v $(pwd)/tests:/app/tests \
-        -v $(pwd)/src:/app/src \
-        -v $(pwd)/composer.json:/app/composer.json \
+        -v "$(pwd)/tests:/app/tests" \
+        -v "$(pwd)/src:/app/src" \
+        -v "$(pwd)/composer.json:/app/composer.json" \
         "${name_image_php5}:${name_tag_php5}"
     exit $?
 }
 
-function runPhpcbf() {
+runPhpcbf() {
     echoTitle 'FIX: Fix the marked sniff violations'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'phpcbf' && {
         return 2
     }
-    ./vendor/bin/phpcbf --standard=./tests/conf/phpcs.xml -v
-    [ $? -eq 0 ] && return 0 || return 1
+    if ./vendor/bin/phpcbf --standard=./tests/conf/phpcs.xml -v; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runPHPCS() {
+runPHPCS() {
     echoTitle 'TEST: PHP Code Sniffer (Compliant with PSR2)'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'phpcs' && {
         return 2
     }
-    ./vendor/bin/phpcs --standard=./tests/conf/phpcs.xml -v
-    [ $? -eq 0 ] && return 0 || return 1
+    if ./vendor/bin/phpcs --standard=./tests/conf/phpcs.xml -v; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runPHPMD() {
+runPHPMD() {
     echoTitle 'TEST: PHPMD (Mess Detector)'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'phpmd' && {
         return 2
     }
-    ./vendor/bin/phpmd ./src ansi ./tests/conf/phpmd.xml
-    [ $? -eq 0 ] && return 0 || return 1
+    if ./vendor/bin/phpmd ./src ansi ./tests/conf/phpmd.xml; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runPHPStan() {
+runPHPStan() {
     echoTitle 'TEST: PHPStan'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'phpstan' && {
         return 2
     }
-    ./vendor/bin/phpstan \
-        analyse src --level=max
-    [ $? -eq 0 ] && return 0 || return 1
+    if ./vendor/bin/phpstan analyse src --level=max; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runPHPUnit() {
+runPHPUnit() {
     echoTitle 'TEST: PHPUnit'
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'phpunit' && {
         return 2
     }
@@ -479,43 +505,57 @@ function runPHPUnit() {
     }
     setOptionPHPUnitTestdox
     echo '- Running PHPUnit'
-    ./vendor/bin/phpunit \
-        --configuration ./tests/conf/phpunit.xml \
-        $option_testdox
-    [ $? -eq 0 ] && return 0 || return 1
+    if ./vendor/bin/phpunit --configuration ./tests/conf/phpunit.xml "$option_testdox"; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runPsalm() {
-    # Skip if option not set
+runPsalm() {
+    # Skip if the option wasn't set
     ! isFlagSet 'psalm' && {
         return 2
     }
 
     # Psalm fails with relative paths so specify as absolute path
     path_dir_current=$(getPathScript)
-    path_dir_parent=$(dirname "${path_dir_current}")
+    path_dir_parent=$(getPathParent)
     path_file_conf_psalm="${path_dir_current}/conf/psalm.xml"
 
     title_temp='TEST: PSalm'
     # Set psalter option if specified
     use_alter=''
     isFlagSet 'psalter' && {
-        use_alter='--alter --issues=all'
+        use_alter='--alter'
         title_temp="${title_temp} (w/ alter and issue=all option)"
     }
     echoTitle "${title_temp}"
-    ./vendor/bin/psalm.phar \
-        --config="${path_file_conf_psalm}" \
-        --root="${path_dir_parent}" \
-        --show-info=true \
-        $use_alter
-    [ $? -eq 0 ] && return 0 || return 1
+    if ! test -f "$path_file_conf_psalm"; then
+        echoErrorHR "❌  Missing: psalm.xml at: ${path_file_conf_psalm}"
+        return 1
+    fi
+    echo "PATH CONF:${path_file_conf_psalm}"
+    echo "PATH PRNT:${path_dir_parent}"
+    echo "ALTER: ${use_alter}"
+    if
+        ./vendor/bin/psalm \
+            --config="$path_file_conf_psalm" \
+            --root="$path_dir_parent" \
+            $use_alter # fix: https://github.com/vimeo/psalm/issues/4888
+    then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function runRequirementCheck() {
+runRequirementCheck() {
     echoTitle 'CHECK: Requirement check for tests'
 
-    # Skip if option not set
+    # Skip if the option wasn't set
     ! isFlagSet 'require' && {
         return 2
     }
@@ -530,7 +570,7 @@ function runRequirementCheck() {
     return 0
 }
 
-function runTest() {
+runTest() {
     name_test=$1
     # Run test function given
     result_msg=$($2 2>&1)
@@ -545,28 +585,37 @@ function runTest() {
         echoErrorHR "❌  ${name_test}: failed"
         all_tests_passed=1
     }
-    [ $result -eq 2 ] && echoMsg "🛑  ${name_test}: skipped"
+    [ $result -eq 2 ] && {
+        isFlagSet 'verbose' && echo "${result_msg}"
+        echoMsg "🛑  ${name_test}: skipped"
+    }
 }
 
-function runTestsInContainer() {
+runTestsInContainer() {
     echo '- Calling test container ...'
     echoTitle 'Running Tests in Container'
-    docker-compose --file docker-compose.dev.yml run \
-        -e SCREEN_WIDTH=$SCREEN_WIDTH \
-        $NAME_SERVICE_TEST "${@}"
-    [ $? -eq 0 ] && return 0 || return 1
+    if docker-compose --file docker-compose.dev.yml \
+        run \
+        -e SCREEN_WIDTH="$SCREEN_WIDTH" \
+        "$NAME_SERVICE_TEST" \
+        "${@}"; then
+        return 0
+    else
+        # avoid other exit code rather than 0 and 1
+        return 1
+    fi
 }
 
-function setFlagsTestAllUp() {
+setFlagsTestAllUp() {
     list_option_given="${list_option_given} $(echoFlagOptions)"
 }
 
-function setOptionCoverallsDryRun() {
+setOptionCoverallsDryRun() {
     export COVERALLS_RUN_LOCALLY=1
     # Set dry-run option by default
     option_dry_run='--dry-run'
     isInsideTravis && {
-        echo '- Running inside Travis detected.'
+        echo '- Running inside Travis detected. Dry-run option was unflagged.'
         export TRAVIS=${TRAVIS:-true}
         export CI_NAME=${CI_NAME:-travis-ci}
         # Unset dry-run option
@@ -574,14 +623,14 @@ function setOptionCoverallsDryRun() {
     }
 }
 
-function setOptionPHPUnitTestdox() {
+setOptionPHPUnitTestdox() {
     option_testdox=''
-    [ ${mode_verbose} -eq 0 ] && {
+    [ "$mode_verbose" -eq 0 ] && {
         option_testdox='--testdox'
     }
 }
 
-function showHelp() {
+showHelp() {
     echoTitle 'Help for developing this package.'
     echo "${MSG_HELP}"
 }
@@ -594,13 +643,17 @@ function showHelp() {
 NAME_SERVICE_TEST='test'
 
 # Set width
-export SCREEN_WIDTH=$(getWidthScreen)
+SCREEN_WIDTH=$(getWidthScreen)
+export SCREEN_WIDTH
+
+# Set directory path of this script
+PATH_DIR_SCRIPT="$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)"
 
 # Moving to script's parent directory.
-cd "$(getPathParent)"
+cd "$(getPathParent)" || echo >&2 'Failed to change parent directory.'
 
 # Set all options/args given to this script in lower case
-list_option_given=$(tr '[A-Z]' '[a-z]' <<<"$@")
+list_option_given=$(printf '%s' "$@" | tr '[:upper:]' '[:lower:]')
 
 # Set initial result flag
 #   0    -> All tests passed
@@ -692,13 +745,13 @@ isFlagSet 'docker' && {
     }
 
     isDockerInstalled && {
-        ! isDockerAvailable && {
-            echoErrorHR '💡  Docker is installed but it is not available to use.'
-            echoError '  - Docker engine might be down. Check if Docker is running.'
-        } || {
+        if isDockerAvailable; then
             echoErrorHR '💡  Docker is installed and available.'
             echoError '  - Consider running without "local" option.'
-        }
+        else
+            echoErrorHR '💡  Docker is installed but it is not available to use.'
+            echoError '  - Docker engine might be down. Check if Docker is running.'
+        fi
     }
 
     isComposerInstalled || {

@@ -1,5 +1,6 @@
 #!/usr/bin/env php
 <?php
+
 /**
  * This script will re-write the file name and contents from the template to user provided name.
  *
@@ -16,6 +17,8 @@
  *   Check "scripts" key value in `/composer.json`.
  */
 
+// phpcs:disable PSR1.Files.SideEffects
+
 // Avoid memory size exhaustion. Issue fix: https://github.com/KEINOS/TPL-PHP-HelloWorld/issues/51
 ini_set("memory_limit", "200M");
 
@@ -29,13 +32,13 @@ const DIR_SEP = DIRECTORY_SEPARATOR;
 //  Preparation
 // ============================================================================
 
-// List of files that are expected to exist in the root dir of this repo/package.
+// List of files that are expected to exist in the root dir of this package due
+// to ensure detecting the right path.
 $list_files_in_root_expect = [
     'README.md',
     'LICENSE',
     'Dockerfile',
     'composer.json',
-    'composer.dev.json',
     'src',
 ];
 $path_dir_package = getPathDirRootOfPackage($list_files_in_root_expect);
@@ -179,7 +182,8 @@ function askUserNameVendor()
         echo '-----------------------' . PHP_EOL;
         echo ' Your name/Vendor name ' . PHP_EOL;
         echo '-----------------------' . PHP_EOL;
-        echo "  NOTE: This will replace all the string \"${name_vendor_from}\" to yours. Including namespaces." . PHP_EOL;
+        echo "  NOTE: This will replace all the string \"${name_vendor_from}\" to yours.";
+        echo " Including namespaces." . PHP_EOL;
         echo '- Input your name/vendor name: ';
         $name_vendor = trim(fgets(STDIN));
 
@@ -354,7 +358,8 @@ function getPathDirRootOfPackage($list_files_in_root)
     foreach ($list_files_in_root as $name_file) {
         $path = $path_dir_parent . DIR_SEP . $name_file;
         if (!\file_exists($path)) {
-            throw new \RuntimeException("Expected file in root dir of the package is missing.\n Missing file: ${path}\n");
+            $msg_error = "Expected file in root dir of the package is missing.\n Missing file: ${path}\n";
+            throw new \RuntimeException($msg_error);
         }
     }
 
@@ -392,7 +397,8 @@ function removeInitializationTestFromTravisYamlFile()
         throw new \RuntimeException('File not found at: ' . $path_file_yaml_travis);
     }
 
-    $search  = "  - php ./.devcontainer/initialize_package.php MyVendorName\n  - /bin/bash ./tests/run-tests.sh local all";
+    $search  = "  - php ./.devcontainer/initialize_package.php MyVendorName\n";
+    $search .= "  - /bin/bash ./tests/run-tests.sh local all";
     $replace = '';
     $subject = file_get_contents($path_file_yaml_travis);
     $data    = str_replace($search, $replace, $subject);

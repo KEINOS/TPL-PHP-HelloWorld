@@ -1,7 +1,7 @@
 build:
   environment:
     variables:
-      COMPOSER: 'composer.dev.json'
+      COMPOSER: 'composer.json'
   nodes:
     analysis:
       tests:

@@ -7,34 +7,35 @@
 # =============================================================================
 #  Functions
 # =============================================================================
-function echoHR() {
+
+echoHR() {
     # Draw Horizontal Line
-    HR=$(printf '%*s' "${SCREEN_WIDTH}" '' | tr ' ' ${1-=})
+    HR=$(printf '%*s' "$SCREEN_WIDTH" '' | tr ' ' "${1-=}")
     echo "$HR"
 }
 
-function echoMsg() {
+echoMsg() {
     echo "- ${1}"
 }
 
-function echoSubTitle() {
+echoSubTitle() {
     echoHR '-'
     echo "■  $1"
     echoHR '-'
 }
 
-function echoTitle() {
+echoTitle() {
     echo
     echoHR
     echo "  ${1}"
     echoHR
 }
 
-function isModeDev() {
+isModeDev() {
     [ "${1}" = "--dev" ] && return 0 || return 1
 }
 
-function isPHP8() {
+isPHP8() {
     php -r '(version_compare(PHP_VERSION, "8.0") >= 0) ? exit(0) : exit(1);'
     return $?
 }
@@ -50,14 +51,18 @@ PATH_DIR_MOUNTED=$(pwd)
 # Move to parent directory
 PATH_DIR_SCRIPT=$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)
 PATH_DIR_PARENT=$(dirname "$PATH_DIR_SCRIPT")
-cd "$PATH_DIR_PARENT"
+cd "$PATH_DIR_PARENT" || echo >&2 'Failed to move parent directory.'
 echo "- Current working dir: $(pwd)"
 
 # Set width
-$(tput cols 2>/dev/null 1>/dev/null) && {
+tput cols 2>/dev/null 1>/dev/null && {
     SCREEN_WIDTH=$(tput cols)
 }
 SCREEN_WIDTH=${SCREEN_WIDTH:-80}
+
+# Set default Composer config and version
+COMPOSER=${COMPOSER:-'composer.json'}
+COMPOSER_VERSION=${COMPOSER_VERSION:-'1.10.19'}
 
 # =============================================================================
 #  Main
@@ -68,73 +73,89 @@ echoTitle 'Install & Setup PHP Composer'
 echoSubTitle 'NOTE'
 echo "- Who am I: $(whoami)"
 echo "- Current path: ${PATH_DIR_MOUNTED}"
-isModeDev $1 && {
+if isModeDev "${1}"; then
     echo '- Option "--dev" detected. Dev dependencies will be installed.'
-} || {
+else
     echo '- No dev dependencies will be installed. To install them, use "--dev" option.'
-}
+fi
 
 echoSubTitle 'CHECK: PHP bin'
-which php 1>/dev/null
-[ $? -ne 0 ] && {
+if ! which php 1>/dev/null; then
     echoMsg 'ERROR: No PHP found. PHP must be installed.'
     exit 1
-}
+fi
 echoMsg "💡  $(php -v)"
 
 echoSubTitle 'CHECK: Composer bin'
-which composer 1>/dev/null || {
+if ! composer 1>/dev/null; then
     echo '- Composer not found.'
     echoTitle 'Installing composer.'
-    source ./.devcontainer/install_composer.sh
-}
+    # Include installer and run
+    # shellcheck source=./.devcontainer/install_composer.sh
+    . ./.devcontainer/install_composer.sh
+fi
 
-which composer 1>/dev/null || {
+if ! composer 1>/dev/null; then
     echoMsg 'ERROR: Failed to install composer.'
     exit 1
-}
+fi
 
 # Downgrade PHP Composer from v2 to v1.
 # This is needed to mantain the test package's compatibility. This might change in the future.
-composer self-update 1.10.17 || {
+composer self-update "$COMPOSER_VERSION" || {
     echoMsg 'ERROR: Failed to downgrade composer.'
     exit 1
 }
 
-[ -f "~/.composer/keys.tags.pub" ] && [ -f "~/.composer/keys.dev.pub" ] || {
-    echoMsg "💡  Composer Public Keys for $(whoami) not fond"
-    echo '- Downloding pub keys for composer ...'
-    mkdir -p ~/.composer
-    wget https://composer.github.io/releases.pub -O ~/.composer/keys.tags.pub &&
-        wget https://composer.github.io/snapshots.pub -O ~/.composer/keys.dev.pub || {
-        echoMsg '❌ ERROR: Failed to download pub keys.'
-        exit 1
-    }
-}
-
-[ -f "/home/${WORK_USER}/.composer/keys.tags.pub" ] && [ -f "/home/${WORK_USER}/.composer/keys.dev.pub" ] || {
-    echoMsg "💡  Composer Public Keys for ${WORK_USER} not fond"
-    echo "- Copying pub keys for composer from user $(whoami) .composer dir ..."
+# Pre-create composer configuration directories
+if ! test -f "${HOME}/.composer"; then
+    mkdir -p "${HOME}/.composer"
+fi
+if ! test -f "/home/${WORK_USER}/.composer"; then
     mkdir -p "/home/${WORK_USER}/.composer"
-    cp -f ~/.composer/keys.tags.pub "/home/${WORK_USER}/.composer/keys.tags.pub" &&
-        cp -f ~/.composer/keys.dev.pub "/home/${WORK_USER}/.composer/keys.dev.pub"
-    [ "$?" -ne 0 ] && {
-        echoMsg '❌ ERROR: Failed to copy pub keys.'
+fi
+
+# Copy public keys of tags to both root and work user
+if ! test -f "${HOME}/.composer/keys.tags.pub"; then
+    echoMsg "💡  Composer public keys of tags for $(whoami) not fond"
+    echo '- Downloding pub key of tags for composer ...'
+    if ! wget https://composer.github.io/releases.pub -O "${HOME}/.composer/keys.tags.pub"; then
+        echoMsg '❌ ERROR: Failed to download pub key.'
         exit 1
-    }
-}
+    fi
+fi
+if ! test -f "/home/${WORK_USER}/.composer/keys.tags.pub"; then
+    echo "- Copying pub keys for composer from user $(whoami) .composer dir ..."
+    if ! cp -f "${HOME}/.composer/keys.tags.pub" "/home/${WORK_USER}/.composer/keys.tags.pub"; then
+        echoMsg '❌ ERROR: Failed to copy pub keys of tags.'
+        exit 1
+    fi
+fi
+
+# Copy public keys of dev to both root and work user
+if ! test -f "${HOME}/.composer/keys.dev.pub"; then
+    echoMsg "💡  Composer public keys of devs for $(whoami) not fond"
+    echo '- Downloding pub key of dev for composer ...'
+    if ! wget https://composer.github.io/snapshots.pub -O "${HOME}/.composer/keys.dev.pub"; then
+        echoMsg '❌ ERROR: Failed to download pub key.'
+        exit 1
+    fi
+fi
+if ! test -f "/home/${WORK_USER}/.composer/keys.dev.pub"; then
+    echoMsg "💡  Composer Public Keys of devs for ${WORK_USER} not fond"
+    if ! cp -f "${HOME}/.composer/keys.dev.pub" "/home/${WORK_USER}/.composer/keys.dev.pub"; then
+        echoMsg '❌ ERROR: Failed to copy pub keys of devs.'
+        exit 1
+    fi
+fi
+
+# Smoke test of composer
 echoMsg "💡  $(composer --version)"
 
-echoSubTitle 'DIAGNOSE: Diagnosing composer'
-composer diagnose || {
-    echoMsg '❌ ERROR: Composer diagnose failed.'
-    exit 1
-}
-echoMsg '✅ Composer diagnose test passed.'
-
-echoSubTitle 'VALIDATION: composer.json for production'
+# Validating composer config file
+echoSubTitle 'VALIDATION: composer.json'
 [ -f ./composer.json ] || {
-    echoMsg '💡  EXIT: "./composer.json" not found.'
+    echoMsg '❌ ERROR: "./composer.json" not found.'
     exit 1
 }
 echoMsg '💡  composer.json found. Validating ...'
@@ -144,33 +165,32 @@ composer validate ./composer.json || {
 }
 echoMsg '✅ Valid composer format!'
 
-echoSubTitle 'VALIDATION: composer.dev.json for development'
-[ -f ./composer.dev.json ] || {
-    echoMsg '💡  EXIT: "./composer.dev.json" not found.'
+# Diagnose composer
+echoSubTitle 'DIAGNOSE: Diagnosing composer'
+composer diagnose || {
+    echoMsg '❌ ERROR: Composer diagnose failed.'
     exit 1
 }
-echoMsg '💡  composer.dev.json found. Validating ...'
-composer validate ./composer.dev.json || {
-    echoMsg '❌ ERROR: Invalid composer.dev.json format.'
-    exit 1
-}
-echoMsg '✅ Valid composer format!'
+echoMsg '✅ Composer diagnose test passed.'
 
+# Install Dependencies
 echoSubTitle 'Installing dependencies'
-isModeDev $1 && {
+if isModeDev "${1}"; then
     echoMsg 'Removing old lock and vendor files of composer'
     rm -f ./composer.lock && echo 'Lock file removed ...'
     rm -f ./composer.dev.lock && echo 'Lock file removed ...'
     rm -rf ./vendor && echo 'Vendor dir removed ...'
-    echoMsg '💡  Installing WITH dev packages (./composer.dev.json)'
-    isPHP8 && {
+
+    echoMsg "💡  Installing WITH dev packages (./${COMPOSER})"
+    if isPHP8; then
         echo '- PHP8 detected. Ignoring platform reqs.'
-        COMPOSER='composer.dev.json' composer install -vv --ignore-platform-reqs --no-plugins
+        composer install -vv --ignore-platform-reqs --no-plugins
         result=$?
-    } || {
-        COMPOSER='composer.dev.json' composer install -vv
+    else
+        composer install -vv
         result=$?
-    }
+    fi
+
     # some version of psalm forgets to create sym-link
     ! [ -f ./vendor/bin/psalm ] && {
         echoMsg 'Creating sym-link to: ./vendor/bin/psalm'
@@ -182,14 +202,11 @@ isModeDev $1 && {
         ./vendor/bin/psalm --init source_dir="../../src" level=8 &&
             mv -f ./psalm.xml ./test/conf/psalm.xml
     }
-}
-
-! isModeDev $1 && {
-    export COMPOSER='composer.json'
+else
     echoMsg '💡  Installing with NO dev packages'
     composer install --no-dev --no-interaction
     result=$?
-}
+fi
 
 [ $result -ne 0 ] && {
     echoMsg '❌ ERROR: Fail to install dependencies.'
