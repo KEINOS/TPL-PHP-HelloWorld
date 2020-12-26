@@ -5,12 +5,12 @@
 
 # Super cautious "Hello-World"
 
-This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just say "Hello-World!".
+This repo is an overly-cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just say "Hello-World!".
 
 ## Tests
 
 - Supported PHP Version to test
-  - PHP v7.1, 7.2, 7.3, 7.4 (, nightly)
+  - PHP v7.1, 7.2, 7.3, 7.4, 8.0 (, nightly)
   - Details see: [.travis.yml](./.travis.yml)
     - Note: The nightly build version (PHP8-dev) fails on purpose in TravisCI.
 - Unit Test & Code Coverage
