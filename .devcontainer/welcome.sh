@@ -10,11 +10,9 @@ echo '--------------------------------------------------------------------------
 echo "- PHP ver: $(php -r 'echo phpversion();')"
 echo "- Shell: ${SHELL}"
 echo "- User: $(whoami)"
-echo '- To run tests:'
+echo '- Commands available:'
 echo '    Run Unit Tests   : $ composer test'
-echo '    Run all tests    : $ composer test all'
-echo '    Verbose output   : $ composer test all verbose'
+echo '    Run All tests    : $ composer test -- --all'
 echo '    View all commands: $ composer test help'
-echo '    Run shellcheck   : $ composer shellcheck'
-echo '- Shfmt will be automaitcally installed when .sh file was opened'
-echo '- Press option+Shift+f to auto-format'
+echo '- "shfmt" will be automaitcally installed when .sh file was opened on VSCode'
+echo '- Auto format: Press option+Shift+f'

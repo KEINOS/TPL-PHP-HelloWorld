@@ -8,59 +8,94 @@
 #       $ shellcheck -x -s sh ./tests/run-tests.sh
 # =============================================================================
 
-OPTIONS='requirement diagnose phpcs phpmd phpcbf phpunit phpstan psalm phan coveralls'
+# Available options 'a la carte' for testing.
+OPTIONS="\
+ --requirement \
+ --diagnose \
+ --phpcs \
+ --phpmd \
+ --phpcbf \
+ --phpunit \
+ --phpstan \
+ --psalm \
+ --phan \
+ --coveralls"
 
 MSG_HELP=$(
     cat <<'HEREDOC'
-
 - Basic Commands
 
-    $ composer test
-    $ composer bench
-    $ composer compile
+    Syntax:
+      composer [command]
 
-    test      ... Run the tests and/or analyzers in local or docker. For
-                  detailed usage see the next section.
-    bench     ... Run benchmarks in "./bench" dir.
-    compile   ... Creates a Phar archive under "./bin" dir.
+    Commands:
+      test       ... Run the tests and/or analyzers in local or docker. For
+                     detailed usage see the next section.
+      shellcheck ... Run static analysis of shell script(*.sh) files. Except
+                     the "./vendor" directory.
+      bench      ... Run benchmarks in "./bench" dir.
+      compile    ... Creates a Phar archive under "./bin" dir using `box`.
+                     (This command is unstable)
 
-- Basic Test Command Usage
+    Sample:
+      $ composer test
+      $ composer shellcheck
+      $ composer bench
+      $ composer compile
 
-    composer test [option option ...]
+- Basic "test" Command Usage
 
-    $ composer test
-    $ composer test help
+    Syntax:
+      composer test [help] [-- --option --option ...]
 
-    $ composer test local
-    $ composer test docker
+    Sample:
+      $ composer test help ... Shows this help.
 
-    $ composer test phpmd
-    $ composer test phpstan psalm
-    $ composer test phpmd psalm local
-    $ composer test all
-    $ composer test all verbose
+- Available "test" Command Options
 
-    Without an option, only unit test will be run.
+    Syntax:
+      composer test -- [--option --option ...]
 
-- Available Options
+    Note:
+      - Append "--" before options.
+      - PHPUnit will always run. ("-- --phpunit" is the default)
 
-    build        ... Re-builds the Docker container for testing.
-    help         ... Shows this help.
+    "test" Commands:
+      --build        ... Re-builds the Docker container for testing.
+      --docker       ... Force to run using docker, if available.
+      --local        ... Force to run using local composer package.
 
-    verbose      ... Displays test results in verbose mode.
-    requirement  ... Check package requirement for developing
-    diagnose     ... Diagnoses composer
+      --diagnose     ... Diagnoses composer.
+      --phpcbf       ... Fix the marked sniff violations of PHPCS.
+      --psalter      ... Run Psalter to fix Psalm errors (Run psalm --alter).
+      --requirement  ... Check package requirement for developing.
+      --verbose      ... Displays test results in verbose mode.
 
-    phan
-    coveralls
-    phpcs
-    phpmd
-    phpunit
-    phpstan
-    psalm
+      --all ............ Runs all the below options. These options can be
+                         specified individualy, 'a la carte'.
+        --diagnose
+        --coveralls
+        --phan
+        --phpcs
+        --phpmd
+        --phpstan
+        --phpunit
+        --psalm
+        --requirement
 
-    phpcbf       ... Fix the marked sniff violations of PHPCS.
-    psalter      ... Run Psalter to fix Psalm errors (Run psalm --alter).
+    Sample:
+      Note: Without an option, only tests of PHPUnit will be run.
+
+      $ composer test help
+      $ composer test -- --local
+      $ composer test -- --docker
+
+      $ composer test -- --all
+      $ composer test -- --verbose --all
+
+      $ composer test -- --phpmd
+      $ composer test -- --phpstan --psalm
+      $ composer test -- --phpmd --psalm --local
 
 HEREDOC
 )
@@ -136,8 +171,8 @@ echoFlagOptions() {
 
 echoHelpOption() {
     echo '- Available Option Flags:'
-    echo "    $(echoFlagOptions) (To test all use: all)"
-    echo "    (optional for auto fix) psalter phpcbf"
+    echo "    $(echoFlagOptions) (To test all use: --all)"
+    echo "    (optional for auto fix use: --psalter --phpcbf)"
 }
 
 echoHR() {
@@ -181,6 +216,7 @@ getPathParent() {
 getPathScript() {
     echo "${PATH_DIR_SCRIPT:?'Path variable must be set before call.'}"
 }
+
 getWidthScreen() {
     SCREEN_WIDTH_DEFAULT=80
     eval "$(tput cols 2>/dev/null 1>/dev/null)" && {
@@ -215,9 +251,10 @@ isDockerInstalled() {
 }
 
 isFlagSet() {
-    #option=$(tr 'A-Z' 'a-z' <<<"${1}")
-    option=$(printf '%s' "${1}" | tr '[:upper:]' '[:lower:]')
-    echo "$list_option_given" | grep "$option" 2>/dev/null 1>/dev/null
+    flag_tmp="$1"
+    option=$(printf '%s' "$flag_tmp" | tr '[:upper:]' '[:lower:]')
+    # Captuire '--option' from given args.
+    echo "$list_option_given" | grep "\-\-$option" 2>/dev/null 1>/dev/null
     return $?
 }
 
@@ -296,7 +333,6 @@ isRequirementsInstallable() {
 }
 
 isRequirementsInstalled() {
-
     # To see which packages are not install run with 'verbose' option
     isInstalledPackage phpunit &&
         isInstalledPackage phan &&
@@ -653,7 +689,7 @@ PATH_DIR_SCRIPT="$(cd "$(dirname "${BASH_SOURCE:-$0}")" && pwd)"
 cd "$(getPathParent)" || echo >&2 'Failed to change parent directory.'
 
 # Set all options/args given to this script in lower case
-list_option_given=$(printf '%s' "$@" | tr '[:upper:]' '[:lower:]')
+list_option_given=$(printf '%s ' "$@" | tr '[:upper:]' '[:lower:]')
 
 # Set initial result flag
 #   0    -> All tests passed
@@ -664,17 +700,19 @@ all_tests_passed=0
 #  Flag Option Setting
 # -----------------------------------------------------------------------------
 
+# Show help
+# '--help' was registered for composer's help, so capture 'help' as an exception.
+echo "$list_option_given" | grep 'help' && {
+    showHelp
+    exit $?
+}
+
 isFlagSet 'php5' && {
     isInsideContainer && {
         echoError '❌  You can not run "php5" option inside the container.'
         exit 1
     }
     runPhp5
-    exit $?
-}
-
-isFlagSet 'help' && {
-    showHelp
     exit $?
 }
 
@@ -687,8 +725,8 @@ isFlagSet 'build' && {
     isDockerAvailable && {
         echoAlert '[Auto-detect]: Docker found'
         echo '- Test will be run on Docker'
-        echo '- To specify use: local or docker'
-        list_option_given="${list_option_given} docker"
+        echo '- To specify use: --local or --docker'
+        list_option_given="${list_option_given} --docker"
     }
 }
 
@@ -747,7 +785,7 @@ isFlagSet 'docker' && {
     isDockerInstalled && {
         if isDockerAvailable; then
             echoErrorHR '💡  Docker is installed and available.'
-            echoError '  - Consider running without "local" option.'
+            echoError '  - Consider running without "--local" option.'
         else
             echoErrorHR '💡  Docker is installed but it is not available to use.'
             echoError '  - Docker engine might be down. Check if Docker is running.'
@@ -777,11 +815,11 @@ echoAlert 'Dumping composer autoload files'
 composer dump-autoload --no-plugins
 
 # Set minimum test
-list_option_given="${list_option_given} phpunit"
+list_option_given="${list_option_given} --phpunit"
 
 # Alert if verbose flag is false(not 0)
 [ $mode_verbose -ne 0 ] && {
-    echoAlert 'For detailed output, use option: verbose'
+    echoAlert 'For detailed output, use: --verbose'
 }
 
 # Set all the flags up, if "all" option is specified
