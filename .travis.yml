@@ -7,16 +7,13 @@ env:
 
 install: |
   path_dir_ini=$(php -i | grep php.ini | grep Configuration | grep Path | grep -v grep | awk '{ print $6 }' 2>&1) && \
-  echo "- Path ini: ${path_dir_ini}" && \
-  ls -la "$path_dir_ini" && \
+  cat "${path_dir_ini}/conf.d/xdebug.ini" && \
   path_dir_ext=$(php -r 'echo ini_get("extension_dir");') && \
-  echo "- Path ext: ${path_dir_ext}" && \
-  ls -la "$path_dir_ext" && \
-  echo  && \
+  which pecl && \
   if php -r 'exit(version_compare(PHP_VERSION, "7.2.0", ">=") ? 0 : 1);'; then \
     echo '-- UPDATE xdebug.ini' \
-    && ls -la /usr/local/etc/php/conf.d \
-    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
+    && ls -la "${path_dir_ini}/conf.d" \
+    && echo "zend_extension=$(find "$path_dir_ext" -name xdebug.so)" > "${path_dir_ini}/conf.d/xdebug.ini" \
     && echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/xdebug.ini; \
   else \
