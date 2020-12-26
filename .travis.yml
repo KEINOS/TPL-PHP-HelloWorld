@@ -6,8 +6,13 @@ env:
   - COMPOSER=composer.json
 
 install: |
-  php -i | grep php.ini | grep Configuration | grep Path | awk '{ print $6 }' && \
-  echo $(php -r 'echo ini_get("extension_dir");') && \
+  path_dir_ini=$(php -i | grep php.ini | grep Configuration | grep Path | grep -v grep | awk '{ print $6 }' 2>&1) && \
+  echo "- Path ini: ${path_dir_ini}" && \
+  ls -la "$path_dir_ini" && \
+  path_dir_ext=$(php -r 'echo ini_get("extension_dir");') && \
+  echo "- Path ext: ${path_dir_ext}" && \
+  ls -la "$path_dir_ext" && \
+  echo  && \
   if php -r 'exit(version_compare(PHP_VERSION, "7.2.0", ">=") ? 0 : 1);'; then \
     echo '-- UPDATE xdebug.ini' \
     && ls -la /usr/local/etc/php/conf.d \
