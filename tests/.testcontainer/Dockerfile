@@ -1,6 +1,6 @@
 # To build this container you need to call it from the parent directory.
 #   See: ../docker-comose.dev.yml
-ARG NAME_IMAGE=php:8.0.0-cli-alpine
+ARG NAME_IMAGE=php:8.0-cli-alpine
 ARG COVERALLS_RUN_LOCALLY=1
 ARG COVERALLS_REPO_TOKEN
 ARG COMPOSER='composer.dev.json'

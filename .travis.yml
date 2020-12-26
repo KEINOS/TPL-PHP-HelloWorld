@@ -27,15 +27,15 @@ install: |
 
 matrix:
   include:
-    # PHP 7.0-7.2support deprecated. Many test packages supports only >= 7.3.0
+    # PHP 7.0 support deprecated. xdebug supports only >= 7.1.0
     #- php: 7.0
     #  dist: xenial
-    #- php: 7.1
-    #  dist: bionic
-    #- php: 7.1.33
-    #  dist: xenial
-    #- php: 7.2
-    #  dist: bionic
+    - php: 7.1
+      dist: bionic
+    - php: 7.1.33
+      dist: xenial
+    - php: 7.2
+      dist: bionic
     # Default PHP version in macOS Catalina(10.15.7) and later
     - php: 7.3.11
       dist: bionic
@@ -43,7 +43,7 @@ matrix:
       dist: bionic
     - php: 7.4
       dist: bionic
-    - php: 8.0.0
+    - php: 8.0
       dist: bionic
     - php: nightly
       dist: bionic
