@@ -8,8 +8,9 @@ env:
 before_install:
   - path_dir_ini=$(php -i | grep php.ini | grep Configuration | grep Path | grep -v grep | awk '{ print $6 }' 2>&1)
   - path_dir_ext=$(php -r 'echo ini_get("extension_dir");')
-  - if php -r 'exit(version_compare(PHP_VERSION, "7.2.0", ">=") ? 0 : 1);'; then \
-    echo '- Rewriting xdebug.ini' \
+  - >
+    if php -r 'exit(version_compare(PHP_VERSION, "7.2.0", ">=") ? 0 : 1);'; then \
+      echo '- Rewriting xdebug.ini' \
       && echo "zend_extension=$(find "$path_dir_ext" -name xdebug.so)" > "${path_dir_ini}/conf.d/xdebug.ini" \
       && echo "xdebug.mode=coverage" >> "${path_dir_ini}/conf.d/xdebug.ini" \
       && echo "xdebug.start_with_request=yes" >> "${path_dir_ini}/conf.d/xdebug.ini" \
