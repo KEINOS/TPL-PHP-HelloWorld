@@ -1,18 +1,18 @@
-[![Build Status](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld.svg?branch=master)](https://travis-ci.org/KEINOS/TPL-PHP-HelloWorld/builds)
+[![Build Status](https://travis-ci.com/KEINOS/TPL-PHP-HelloWorld.svg?branch=master)](https://travis-ci.com/KEINOS/TPL-PHP-HelloWorld/builds)
 [![Coverage Status](https://coveralls.io/repos/github/KEINOS/TPL-PHP-HelloWorld/badge.svg)](https://coveralls.io/github/KEINOS/TPL-PHP-HelloWorld)
-[![](https://img.shields.io/scrutinizer/quality/g/KEINOS/TPL-PHP-HelloWorld/master)](https://scrutinizer-ci.com/g/KEINOS/TPL-PHP-HelloWorld/build-status/master "Scrutinizer code quality")
-[![](https://img.shields.io/packagist/php-v/keinos/hello-world-tpl)](https://github.com/KEINOS/TPL-PHP-HelloWorld/blob/master/.travis.yml "Version Support")
+[![Code Quality](https://img.shields.io/scrutinizer/quality/g/KEINOS/TPL-PHP-HelloWorld/master)](https://scrutinizer-ci.com/g/KEINOS/TPL-PHP-HelloWorld/build-status/master "Scrutinizer code quality")
+[![Supported PHP Version](https://img.shields.io/packagist/php-v/keinos/hello-world-tpl)](https://github.com/KEINOS/TPL-PHP-HelloWorld/blob/master/.travis.yml "Version Support")
 
 # Super cautious "Hello-World"
 
-This repo is an overly cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just say "Hello-World!".
+This repo is an overly-cautious [Hello-World PHP script](./src/Main.php) for fun. It includes the following tests and CIs to just say "Hello-World!".
 
 ## Tests
 
 - Supported PHP Version to test
-  - PHP v7.1, 7.2, 7.3, 7.4 (, nightly)
+  - PHP v7.1, 7.2, 7.3, 7.4, 8.0 (, nightly)
   - Details see: [.travis.yml](./.travis.yml)
-    - Note: The nightly build version (PHP8-dev) fails on purpose in TravisCI.
+    - Note: The nightly build version (PHP8-dev) might fail in TravisCI.
 - Unit Test & Code Coverage
   - [PHPUnit](https://phpunit.de/)
 - Coding Standard Compliance

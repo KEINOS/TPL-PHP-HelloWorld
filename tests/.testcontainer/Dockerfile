@@ -1,6 +1,6 @@
 # To build this container you need to call it from the parent directory.
 #   See: ../docker-comose.dev.yml
-ARG NAME_IMAGE=php:8.0.0-cli-alpine
+ARG NAME_IMAGE=php:8.0-cli-alpine
 ARG COVERALLS_RUN_LOCALLY=1
 ARG COVERALLS_REPO_TOKEN
 ARG COMPOSER='composer.dev.json'
@@ -25,6 +25,7 @@ RUN apk --no-cache --update add \
         build-base \
         wget \
         zip unzip \
+        re2c \
     && pecl channel-update pecl.php.net
 
 RUN if php -r 'exit(version_compare(PHP_VERSION, "7.2.0", ">=") ? 0 : 1);'; then \

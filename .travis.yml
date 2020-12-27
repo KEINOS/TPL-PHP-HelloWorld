@@ -5,24 +5,49 @@ env:
   - PHAN_DISABLE_XDEBUG_WARN=1
   - COMPOSER=composer.json
 
-install: sudo snap install tree && /bin/bash ./.devcontainer/setup_composer.sh --dev
+before_install:
+  - path_dir_ini=$(php -i | grep php.ini | grep Configuration | grep Path | grep -v grep | awk '{ print $6 }' 2>&1)
+  - path_dir_ext=$(php -r 'echo ini_get("extension_dir");')
+  - |
+    if php -r 'exit(version_compare(PHP_VERSION, "7.2.0", ">=") ? 0 : 1);'; then \
+      echo '- Rewriting xdebug.ini' \
+      && echo "zend_extension=$(find "$path_dir_ext" -name xdebug.so)" > "${path_dir_ini}/conf.d/xdebug.ini" \
+      && echo "xdebug.mode=coverage" >> "${path_dir_ini}/conf.d/xdebug.ini" \
+      && echo "xdebug.start_with_request=yes" >> "${path_dir_ini}/conf.d/xdebug.ini" \
+      && echo "html_errors=on" >> "${path_dir_ini}/conf.d/xdebug.ini"; \
+    else \
+      echo '- Downgrading Xdebug to 2.9.8' \
+      && pecl channel-update pecl.php.net \
+      && pecl install -f xdebug-2.9.8; \
+      \
+      echo '- Creating xdebug.ini' \
+      && echo "zend_extension=$(find "$path_dir_ext" -name xdebug.so)" > "${path_dir_ini}/conf.d/xdebug.ini" \
+      && echo "xdebug.remote_enable=on" >> "${path_dir_ini}/conf.d/xdebug.ini" \
+      && echo "xdebug.remote_autostart=on" >> "${path_dir_ini}/conf.d/xdebug.ini" \
+      && echo "html_errors=on" >> "${path_dir_ini}/conf.d/xdebug.ini"; \
+    fi
+
+install: /bin/bash ./.devcontainer/setup_composer.sh --dev
+
 matrix:
   include:
-    # PHP 7.0-7.2support deprecated. Many test packages supports only >= 7.3.0
+    # PHP 7.0 support deprecated. xdebug supports only >= 7.1.0
     #- php: 7.0
     #  dist: xenial
-    #- php: 7.1
-    #  dist: bionic
-    #- php: 7.1.33
-    #  dist: xenial
-    #- php: 7.2
-    #  dist: bionic
+    - php: 7.1
+      dist: bionic
+    - php: 7.1.33
+      dist: xenial
+    - php: 7.2
+      dist: bionic
     # Default PHP version in macOS Catalina(10.15.7) and later
     - php: 7.3.11
       dist: bionic
     - php: 7.3
       dist: bionic
     - php: 7.4
+      dist: bionic
+    - php: 8.0
       dist: bionic
     - php: nightly
       dist: bionic
@@ -32,4 +57,4 @@ matrix:
 script:
   - /bin/bash ./tests/run-tests.sh --local --all --verbose
   - php ./.devcontainer/initialize_package.php MyVendorName
-  - /bin/bash ./tests/run-tests.sh --local --all --verbose
+  - /bin/bash ./tests/run-tests.sh --local --all
