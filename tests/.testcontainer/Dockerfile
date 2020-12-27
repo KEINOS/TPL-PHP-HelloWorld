@@ -25,6 +25,7 @@ RUN apk --no-cache --update add \
         build-base \
         wget \
         zip unzip \
+        re2c \
     && pecl channel-update pecl.php.net
 
 RUN if php -r 'exit(version_compare(PHP_VERSION, "7.2.0", ">=") ? 0 : 1);'; then \
