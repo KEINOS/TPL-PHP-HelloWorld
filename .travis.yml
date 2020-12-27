@@ -21,7 +21,7 @@ before_install:
       && find "$path_dir_ext" -name xdebug.so \
       && echo "${path_dir_ini}/conf.d/xdebug.ini" \
       && pecl channel-update pecl.php.net \
-      && yes | pecl install xdebug-2.9.8 \
+      && pecl install -f xdebug-2.9.8 \
       && cat "${path_dir_ini}/conf.d/xdebug.ini" \
       && echo "zend_extension=$(find "$path_dir_ext" -name xdebug.so)" > "${path_dir_ini}/conf.d/xdebug.ini" \
       && echo "xdebug.remote_enable=on" >> "${path_dir_ini}/conf.d/xdebug.ini" \
