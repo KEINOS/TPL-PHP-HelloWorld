@@ -22,11 +22,11 @@ before_install:
       && echo "${path_dir_ini}/conf.d/xdebug.ini" \
       && pecl channel-update pecl.php.net \
       && yes | pecl install xdebug-2.9.8 \
+      && cat "${path_dir_ini}/conf.d/xdebug.ini" \
       && echo "zend_extension=$(find "$path_dir_ext" -name xdebug.so)" > "${path_dir_ini}/conf.d/xdebug.ini" \
       && echo "xdebug.remote_enable=on" >> "${path_dir_ini}/conf.d/xdebug.ini" \
       && echo "xdebug.remote_autostart=on" >> "${path_dir_ini}/conf.d/xdebug.ini" \
-      && echo "html_errors=on" >> "${path_dir_ini}/conf.d/xdebug.ini" \
-      && cat "${path_dir_ini}/conf.d/xdebug.ini"; \
+      && echo "html_errors=on" >> "${path_dir_ini}/conf.d/xdebug.ini"; \
     fi
 
 install: /bin/bash ./.devcontainer/setup_composer.sh --dev
