@@ -23,7 +23,7 @@
     },
     "bin": ["bin/HelloWorld"],
     "require": {
-        "php": "^8.0 || ^7.3 || ^7.0",
+        "php": "^8.0 || ^7.1",
         "ext-mbstring": "*"
     },
     "require-dev": {
