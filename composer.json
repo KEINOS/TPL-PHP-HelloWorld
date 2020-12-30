@@ -76,7 +76,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "docker-compose run --rm --entrypoint='/bin/sh' --workdir='/app' -v $(pwd):/app dev < /dev/tty"
+            "docker-compose --file='./.devcontainer/docker-compose.dev.yml' run --rm  -e COLUMNS=200 --entrypoint='/bin/bash' --workdir='/app' -v $(pwd):/app dev < /dev/tty"
         ],
         "shellcheck": [
             "find . -type f \\( -name '*.sh' \\) ! -path '*/vendor/*' | xargs shellcheck -x -s sh"

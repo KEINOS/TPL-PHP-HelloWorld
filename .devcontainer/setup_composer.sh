@@ -87,6 +87,11 @@ fi
 echoMsg "💡  $(php -v)"
 
 echoSubTitle 'CHECK: Composer bin'
+if isModeDev "${1}"; then
+    echoMsg 'Removing old lock and vendor files of composer'
+    rm -f ./composer.lock && echo 'Lock file removed ...'
+    rm -rf ./vendor && echo 'Vendor dir removed ...'
+fi
 if ! composer 1>/dev/null; then
     echo '- Composer not found.'
     echoTitle 'Installing composer.'
@@ -176,11 +181,6 @@ echoMsg '✅ Composer diagnose test passed.'
 # Install Dependencies
 echoSubTitle 'Installing dependencies'
 if isModeDev "${1}"; then
-    echoMsg 'Removing old lock and vendor files of composer'
-    rm -f ./composer.lock && echo 'Lock file removed ...'
-    rm -f ./composer.dev.lock && echo 'Lock file removed ...'
-    rm -rf ./vendor && echo 'Vendor dir removed ...'
-
     echoMsg "💡  Installing WITH dev packages (./${COMPOSER})"
     if isPHP8; then
         echo '- PHP8 detected. Ignoring platform reqs.'

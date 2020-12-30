@@ -1,0 +1,18 @@
+# This docker-compose file is for development/test.
+version: "3.7"
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - COVERALLS_REPO_TOKEN
+    volumes:
+      - ../:/app
+      - ./welcome.sh:/.welcome.sh
+
+  initialize:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.test.initialize
