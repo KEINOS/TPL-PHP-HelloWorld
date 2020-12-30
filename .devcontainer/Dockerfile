@@ -13,6 +13,11 @@ ARG COMPOSER_VERSION='1.10.19'
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.148.1/containers/php/.devcontainer/base.Dockerfile
 FROM mcr.microsoft.com/vscode/devcontainers/php:0-${VARIANT}
 
+ARG COMPOSER
+ARG COMPOSER_VERSION
+ARG INSTALL_NODE
+ARG NODE_VERSION
+
 ENV \
   # This container uses .oh-my-bash for other themes see: https://github.com/ohmybash/oh-my-bash/wiki/Themes
   # VSCode User NOTE: VSCode will override this value. Set the value in devcontainer.json instead.
@@ -34,8 +39,6 @@ RUN apt-get update \
   && rm -r tmp_install_folder
 
 # Install Node.js(Needs for some extensions)
-ARG INSTALL_NODE
-ARG NODE_VERSION
 RUN if [ "${INSTALL_NODE}" = "true" ]; then su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
 # [Optional] Uncomment this line to install global node packages.

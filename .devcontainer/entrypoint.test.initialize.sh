@@ -2,10 +2,14 @@
 # =============================================================================
 #  Script to test the "initialize_package.php" process.
 # =============================================================================
-#  This script MUST BE RUN inside Docker container.
+#  This file will be removed in the actual initialization process.
+#
 #  It runs the "initialize_package.php" script with vendor name as "MyVendorName"
-#  and then the test. Also note that this script will be deleted by the
+#  and then runs the test. Also note that this script will be deleted by the
 #  "initialize_package.php" script.
+#
+#  Therefore, this script MUST BE COPYED and run inside Docker container and DO
+#  NOT MOUNT IT. Otherwise after the process it will delete this file.
 
 if php /app/.devcontainer/initialize_package.php MyVendorName &&
     composer install &&

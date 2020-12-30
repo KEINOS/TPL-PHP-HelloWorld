@@ -37,7 +37,6 @@ const DIR_SEP = DIRECTORY_SEPARATOR;
 $list_files_in_root_expect = [
     'README.md',
     'LICENSE',
-    'Dockerfile',
     'composer.json',
     'src',
 ];
@@ -110,53 +109,14 @@ usort($list_before_after, function ($a, $b) {
 });
 
 // ============================================================================
-//  Main
-// ============================================================================
-
-// Get only files
-$list_path_file_replace = getListPathFilesAll($path_dir_package, $list_exclude_file);
-try {
-    foreach ($list_path_file_replace as $path_file_current) {
-        // Rewrite contents
-        if (is_file($path_file_current)) {
-            echo 'Now renaming contents... ';
-            rewriteFileContents($path_file_current, $list_before_after);
-        }
-
-        // Rewrite file name
-        rewriteFileName($path_file_current, $name_pkg_from, $name_pkg_to);
-    }
-
-    dumpAutoloadComposer();
-
-    if (!removeInitializationTestFromTravisYamlFile()) {
-        $msg_error = 'Error to rewrite .travis.yml to exclude initialization test.';
-        throw new \RuntimeException($msg_error);
-    }
-    echo '- YAML file ".travis.yml" over-written. Current file is:' . PHP_EOL
-        . file_get_contents(__DIR__ . '/../.travis.yml');
-    foreach ($list_path_files_delete as $path_file_delete) {
-        if (is_file($path_file_delete)) {
-            unlink($path_file_delete);
-        }
-    }
-
-    removeScriptInitFromJson($path_file_json_composer);
-} catch (\RuntimeException $e) {
-    echo 'ERROR: ', PHP_EOL,  $e->getMessage(), "\n";
-}
-
-echo 'Done.', PHP_EOL;
-exit(0);
-
-// ============================================================================
 //  Functions
 // ============================================================================
 
-function askAgainIfSure($string)
+function askAgainIfSure(string $string): bool
 {
     echo '- Are you sure? (Y/n/quit):';
-    $input  = strtolower(trim(fgets(STDIN)));
+    $input  = fgets(STDIN) ?: '';
+    $input  = strtolower(trim($input));
     $result = $input[0];
 
     if ($result === 'y') {
@@ -174,7 +134,7 @@ function askAgainIfSure($string)
     return false;
 }
 
-function askUserNameVendor()
+function askUserNameVendor(): string
 {
     global $name_vendor_from;
 
@@ -185,7 +145,9 @@ function askUserNameVendor()
         echo "  NOTE: This will replace all the string \"${name_vendor_from}\" to yours.";
         echo " Including namespaces." . PHP_EOL;
         echo '- Input your name/vendor name: ';
-        $name_vendor = trim(fgets(STDIN));
+
+        $name_vendor = fgets(STDIN) ?: '';
+        $name_vendor = trim($name_vendor);
 
         if (!empty($name_vendor)) {
             echo PHP_EOL . 'Vendor name will be: ', $name_vendor, PHP_EOL;
@@ -202,15 +164,16 @@ function askUserNameVendor()
 /**
  * Converts string to an UpperCamelCase.
  * - Patterns and details see: https://paiza.io/projects/Rom4MQ4ld7-n_O9F5UFUXA
- *
- * @param  string $string
- * @return string
  */
-function convertToUpperCamelCase(string $string)
+function convertToUpperCamelCase(string $string_orig): string
 {
-    $string = preg_replace('/[^0-9a-zA-Z_]/', '_', $string);
-    $string = preg_replace('/[A-Z]+/', '_\0', $string);
-    $string = preg_replace('/[\s._]+/', '_', $string);
+    $string = preg_replace('/[^0-9a-zA-Z_]/', '_', $string_orig);
+    $string = is_null($string) ? '' : preg_replace('/[A-Z]+/', '_\0', $string);
+    $string = is_null($string) ? '' : preg_replace('/[\s._]+/', '_', $string);
+    if (empty($string)) {
+        throw new \RuntimeException('Failed to convert str to Kebab case: ' . $string_orig);
+    }
+
     $string = strtolower(trim($string, '_'));
     $array  = explode('_', $string);
     $string = '';
@@ -224,18 +187,20 @@ function convertToUpperCamelCase(string $string)
 /**
  * Converts string to a lower_snake_case.
  * - Patterns and details see: https://paiza.io/projects/oUf3KujtN7IelJeh44ADUg
- *
- * @param  string $string
- * @return string
  */
-function convertToSnakeCase(string $string)
+function convertToSnakeCase(string $string_orig): string
 {
-    $string = preg_replace('/[^0-9a-zA-Z_]/', '_', $string);
-    $string = preg_replace('/[A-Z]+/', '_\0', $string);
-    $string = preg_replace('/[\s._]+/', '_', $string);
-    $string = trim($string, '_');
+    $string = preg_replace('/[^0-9a-zA-Z_]/', '_', $string_orig);
+    $string = is_null($string) ? '' : preg_replace('/[A-Z]+/', '_\0', $string);
+    $string = is_null($string) ? '' : preg_replace('/[\s._]+/', '_', $string);
+    if (empty($string)) {
+        throw new \RuntimeException('Failed to convert str to Kebab case: ' . $string_orig);
+    }
 
-    return strtolower($string);
+    $string = trim($string, '_');
+    $string = strtolower($string);
+
+    return $string;
 }
 
 /**
@@ -243,17 +208,21 @@ function convertToSnakeCase(string $string)
  * Skewer and lower case the capital letters and underline the white spaces.
  *
  * - Patterns and details see: https://paiza.io/projects/JmxNJZ9xFvkPdURZJWcSVg
- * @param  string $string
- * @return string
  */
-function convertToKebabCase(string $string)
+function convertToKebabCase(string $string_orig): string
 {
-    $string = preg_replace('/[\s.]+/', '_', $string);
-    $string = preg_replace('/[^0-9a-zA-Z_\-]/', '-', $string);
-    $string = strtolower(preg_replace('/[A-Z]+/', '-\0', $string));
+    $string = preg_replace('/[\s.]+/', '_', $string_orig);
+    $string = is_null($string) ? '' : preg_replace('/[^0-9a-zA-Z_\-]/', '-', $string);
+    $string = is_null($string) ? '' : preg_replace('/[A-Z]+/', '-\0', $string);
+    $string = is_null($string) ? '' : preg_replace('/[_\-][_\-]+/', '-', $string);
+    if (empty($string)) {
+        throw new \RuntimeException('Failed to convert str to Kebab case: ' . $string_orig);
+    }
+
+    $string = strtolower($string);
     $string = trim($string, '-_');
 
-    return preg_replace('/[_\-][_\-]+/', '-', $string);
+    return $string;
 }
 
 /**
@@ -271,6 +240,12 @@ function dumpAutoloadComposer(): void
     }
 }
 
+/**
+ * @param  string $path
+ * @param  array<int,string> $list_exclude
+ * @return array<int,string>
+ * @throws RuntimeException
+ */
 function getListPathFilesAll(string $path, array $list_exclude): array
 {
     $path_dir = getPathDirReal($path);
@@ -283,9 +258,12 @@ function getListPathFilesAll(string $path, array $list_exclude): array
     // GLOB_BRACE flag for glob() is not available in Alpine's PHP.
     // So loop each pattern.
     foreach ($patterns as $pattern) {
-        foreach (\glob($pattern) as $path_file) {
+        $tmp_glob = \glob($pattern);
+        if (!is_array($tmp_glob)) {
+            continue;
+        }
+        foreach ($tmp_glob as $path_file) {
             $name_file = basename($path_file);
-
             // Exclude current and parent directory
             if ($name_file == '.' || $name_file == '..') {
                 continue;
@@ -299,7 +277,6 @@ function getListPathFilesAll(string $path, array $list_exclude): array
                 $result = array_merge($result, getListPathFilesAll($path_file, $list_exclude));
                 continue;
             }
-
             // Returned files must be writable
             if (!is_writable($path_file)) {
                 throw new \RuntimeException(
@@ -307,15 +284,13 @@ function getListPathFilesAll(string $path, array $list_exclude): array
                         '- Path: ' . $path_file . PHP_EOL
                 );
             }
-
             $result[] = $path_file;
         }
     }
-
     return $result;
 }
 
-function getNameFromArg()
+function getNameFromArg(): string
 {
     global $argc, $argv;
 
@@ -326,12 +301,16 @@ function getNameFromArg()
     return $argv[1];
 }
 
-function getNameFromSTDIN()
+function getNameFromSTDIN(): string
 {
-    return (\posix_isatty(STDIN)) ? '' : \file_get_contents('php://stdin');
+    if (\posix_isatty(STDIN)) {
+        return '';
+    }
+
+    return \file_get_contents('php://stdin') ?: '';
 }
 
-function getNameVendor()
+function getNameVendor(): string
 {
     // STDIN
     $name_vendor = trim(getNameFromSTDIN());
@@ -348,9 +327,15 @@ function getNameVendor()
     if (!empty($name_vendor)) {
         return $name_vendor;
     }
+    // Default(current user name)
+    return get_current_user();
 }
 
-function getPathDirRootOfPackage($list_files_in_root)
+/**
+ * @param array<int, string> $list_files_in_root
+ * @throws RuntimeException
+ */
+function getPathDirRootOfPackage(array $list_files_in_root): string
 {
     // Expecting this file is set under /init in the package
     $path_dir_parent = dirname(__DIR__);
@@ -389,42 +374,56 @@ function getPathDirReal(string $path): string
 /**
  * Remove the initialization process test from ".travis.yml" since
  * this line will not be needed after the initialization.
+ *
+ * @throws RuntimeException
  */
-function removeInitializationTestFromTravisYamlFile()
+function removeInitializationTestFromTravisYamlFile(): bool
 {
     $path_file_yaml_travis = __DIR__ .  '/../.travis.yml';
     if (!file_exists($path_file_yaml_travis)) {
         throw new \RuntimeException('File not found at: ' . $path_file_yaml_travis);
     }
 
-    $search  = "  - php ./.devcontainer/initialize_package.php MyVendorName\n";
-    $search .= "  - /bin/bash ./tests/run-tests.sh local all";
+    $search  = '  - php ./.devcontainer/initialize_package.php MyVendorName' . PHP_EOL;
+    $search .= '  - /bin/bash ./tests/run-tests.sh --local --all';
+
     $replace = '';
-    $subject = file_get_contents($path_file_yaml_travis);
+    $subject = file_get_contents($path_file_yaml_travis) ?: '';
     $data    = str_replace($search, $replace, $subject);
 
     return (false !== file_put_contents($path_file_yaml_travis, $data));
 }
 
-function removeScriptInitFromJson(string $path_file_json_composer)
+/**
+ * @throws RuntimeException
+ */
+function removeScriptInitFromJson(string $path_file_json_composer): void
 {
-    $json_composer  = file_get_contents($path_file_json_composer);
+    $json_composer  = file_get_contents($path_file_json_composer) ?: '';
     $array_composer = json_decode($json_composer, true);
     if (empty($array_composer)) {
         throw new \RuntimeException('Failed to decode composer.json.');
     }
+
     unset($array_composer['scripts']['test-init']);
-    $option_json = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES;
+
+    $option_json   = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES;
     $json_composer = json_encode($array_composer, $option_json);
     if ($json_composer === false) {
         throw new \RuntimeException('Failed to re-encode composer.json.');
     }
+
     if (file_put_contents($path_file_json_composer, $json_composer) === false) {
         throw new \RuntimeException('Failed to write composer.json.');
     }
 }
 
-function rewriteFileContents(string $path_file, array $list_before_after)
+/**
+ * @param string $path_file
+ * @param array<int, array<string, mixed>> $list_before_after
+ * @throws RuntimeException When re-write/over-write fails
+ */
+function rewriteFileContents(string $path_file, array $list_before_after): void
 {
     if (!is_file($path_file)) {
         throw new \RuntimeException('Given path is not a file. Path: ' . $path_file);
@@ -463,12 +462,15 @@ function rewriteFileContents(string $path_file, array $list_before_after)
     }
 }
 
-function rewriteFileName($path_file_from, $name_file_from, $name_file_to)
+/**
+ * * @throws RuntimeException When renaming process fails
+ */
+function rewriteFileName(string $path_file_from, string $name_file_from, string $name_file_to): void
 {
     // Find if the file name includes package name. Skip if not.
     $name_file_target = basename($path_file_from);
     if (strpos($name_file_target, $name_file_from) === false) {
-        return false;
+        return;
     }
     // New path to re-write
     $name_file_new = str_replace($name_file_from, $name_file_to, $name_file_target);
@@ -485,9 +487,50 @@ function rewriteFileName($path_file_from, $name_file_from, $name_file_to)
     }
 }
 
-function rewriteNameSpace(string $script)
+function rewriteNameSpace(string $script): string
 {
     global $namespace_from, $namespace_to;
 
     return str_replace($namespace_from, $namespace_to, $script);
 }
+
+// ============================================================================
+//  Main
+// ============================================================================
+
+// Get only files
+$list_path_file_replace = getListPathFilesAll($path_dir_package, $list_exclude_file);
+try {
+    foreach ($list_path_file_replace as $path_file_current) {
+        // Rewrite contents
+        if (is_file($path_file_current)) {
+            echo 'Now renaming contents... ';
+            rewriteFileContents($path_file_current, $list_before_after);
+        }
+
+        // Rewrite file name
+        rewriteFileName($path_file_current, $name_pkg_from, $name_pkg_to);
+    }
+
+    dumpAutoloadComposer();
+
+    if (!removeInitializationTestFromTravisYamlFile()) {
+        $msg_error = 'Error to rewrite .travis.yml to exclude initialization test.';
+        throw new \RuntimeException($msg_error);
+    }
+    echo '- YAML file ".travis.yml" over-written. Current file is:' . PHP_EOL;
+    echo file_get_contents($path_dir_package . DIR_SEP . '.travis.yml');
+
+    foreach ($list_path_files_delete as $path_file_delete) {
+        if (is_file($path_file_delete)) {
+            unlink($path_file_delete);
+        }
+    }
+    removeScriptInitFromJson($path_file_json_composer);
+} catch (\RuntimeException $e) {
+    echo 'ERROR: ', PHP_EOL,  $e->getMessage(), PHP_EOL;
+    exit(1);
+}
+
+echo 'Done.', PHP_EOL;
+exit(0);

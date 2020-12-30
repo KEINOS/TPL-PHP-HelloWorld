@@ -1,6 +1,7 @@
 # =============================================================================
 #  Docker container to test "initialize_package.php" functionability.
 # =============================================================================
+#  This file will be removed in the actual initialization process.
 
 ARG COMPOSER='composer.json'
 
@@ -12,6 +13,7 @@ RUN apk --no-cache add \
       git \
       bash
 
+# Do not mount but copy. The test will re-write and remove files!!!
 COPY . /app
 
 WORKDIR /app
