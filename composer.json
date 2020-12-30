@@ -75,6 +75,7 @@
             "COMPOSER='composer.json' box compile --config=./.devcontainer/box.json"
         ],
         "dev": [
+            "which docker-compose",
             "Composer\\Config::disableProcessTimeout",
             "docker-compose --file='./.devcontainer/docker-compose.dev.yml' run --rm  -e COLUMNS=200 --entrypoint='/bin/bash' --workdir='/app' -v $(pwd):/app dev < /dev/tty"
         ],
