@@ -385,7 +385,7 @@ function removeInitializationTestFromTravisYamlFile(): bool
     }
 
     $search  = '  - php ./.devcontainer/initialize_package.php MyVendorName' . PHP_EOL;
-    $search .= '  - /bin/bash ./tests/run-tests.sh local all';
+    $search .= '  - /bin/bash ./tests/run-tests.sh --local --all';
 
     $replace = '';
     $subject = file_get_contents($path_file_yaml_travis) ?: '';
