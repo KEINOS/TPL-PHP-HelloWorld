@@ -43,17 +43,13 @@ This repo uses the following CIs. On your use, register your repo first.
 
 1. Create a new copy.
 
-    Choose one of the below commands that suits you, to create a new project following your project name. (Ex. MyNewProject)
+    Choose one of the below commands that suits you.
+
+    - Note that you need to specify your project's name. This will be your "package name" as well.
 
     ```bash
-    # For composer user (No Docker)
-    COMPOSER=composer.json composer create-project keinos/hello-world-tpl MyNewProject
-    cd MyNewProject
-    ```
-
-    ```bash
-    # For composer and Docker user
-    composer create-project --no-dev keinos/hello-world-tpl MyNewProject
+    # For composer user with NO Docker
+    composer create-project keinos/hello-world-tpl MyNewProject
     cd MyNewProject
     ```
 
@@ -63,8 +59,6 @@ This repo uses the following CIs. On your use, register your repo first.
     cd MyNewProject
     rm -rf .git
     ```
-
-    **Note** that the project name provided (the "MyNewProject" above) will be the "package name" after the initialization below. Then the namespace will be something like "MyVendorName/MyNewProject".
 
 2. Initialize.
 
@@ -79,7 +73,7 @@ This repo uses the following CIs. On your use, register your repo first.
     Before anything, run the tests to check it's basic test functionality.
 
     ```bash
-    composer test all verbose
+    composer test -- --all --verbose
     ```
 
 4. Initial commit.

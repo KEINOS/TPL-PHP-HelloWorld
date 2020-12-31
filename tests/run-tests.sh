@@ -125,7 +125,7 @@ buildContainerTest() {
     }
 
     echo '- Building container ...'
-    docker-compose -f docker-compose.dev.yml build --no-cache "$NAME_SERVICE_TEST" || {
+    docker-compose -f ./.devcontainer/docker-compose.dev.yml build --no-cache "$NAME_SERVICE_TEST" || {
         echoError '❌  Fail to build test container.'
         exit 1
     }
@@ -630,9 +630,11 @@ runTest() {
 runTestsInContainer() {
     echo '- Calling test container ...'
     echoTitle 'Running Tests in Container'
-    if docker-compose --file docker-compose.dev.yml \
+    if docker-compose \
+        --file ./.devcontainer/docker-compose.dev.yml \
         run \
         -e SCREEN_WIDTH="$SCREEN_WIDTH" \
+        -e COVERALLS_REPO_TOKEN="$COVERALLS_REPO_TOKEN" \
         "$NAME_SERVICE_TEST" \
         "${@}"; then
         return 0

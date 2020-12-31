@@ -2,6 +2,21 @@
 version: "3.7"
 
 services:
+  test:
+    build:
+      context: ../
+      dockerfile: ./tests/.testcontainer/Dockerfile
+      args:
+        - NAME_IMAGE=php:7.1-cli-alpine
+    environment:
+      - COVERALLS_REPO_TOKEN
+    volumes:
+      - ../.git/:/app/.git
+      - ../src:/app/src
+      - ../tests:/app/tests
+      - ../report:/app/report
+      - ../bin:/app/bin
+
   dev:
     build:
       context: .
