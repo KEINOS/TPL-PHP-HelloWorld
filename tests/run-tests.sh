@@ -576,7 +576,7 @@ runPsalm() {
     echo "PATH PRNT:${path_dir_parent}"
     echo "ALTER: ${use_alter}"
     if
-        ./vendor/bin/psalm \
+        ./vendor/bin/psalm.phar \
             --config="$path_file_conf_psalm" \
             --root="$path_dir_parent" \
             $use_alter # fix: https://github.com/vimeo/psalm/issues/4888
@@ -633,7 +633,11 @@ runTestsInContainer() {
     if docker-compose \
         --file ./.devcontainer/docker-compose.dev.yml \
         run \
-        -e SCREEN_WIDTH="$SCREEN_WIDTH" \
+        -v "$(getPathParent)/.git:/app/.git" \
+        -v "$(getPathParent)/.devcontainer:/app/.devcontainer" \
+        -v "$(getPathParent)/src:/app/src" \
+        -v "$(getPathParent)/tests:/app/tests" \
+        -v "$(getPathParent)/composer.json:/app/composer.json" \
         -e COVERALLS_REPO_TOKEN="$COVERALLS_REPO_TOKEN" \
         "$NAME_SERVICE_TEST" \
         "${@}"; then

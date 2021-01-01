@@ -41,6 +41,12 @@ This repo uses the following CIs. On your use, register your repo first.
 
 ## How to use it as a template
 
+### TL; DR
+
+Copy, initialize the project, smoke test, add CI's ACCESS TOKEN then you're redy-to-go!
+
+### TS; DR
+
 1. Create a new copy.
 
     Choose one of the below commands that suits you.
@@ -57,14 +63,15 @@ This repo uses the following CIs. On your use, register your repo first.
     # For Docker and docker-compose user (No PHP nor composer user)
     git clone https://github.com/KEINOS/TPL-PHP-HelloWorld.git MyNewProject
     cd MyNewProject
-    rm -rf .git
     ```
 
 2. Initialize.
 
-    Run the script below, which will re-write the package and vendor names to the provided name. (Ex. MyVendorName)
+    Run the command below to initialize your project. This will re-write the package and vendor names to the provided name. (Ex. MyVendorName)
 
     ```bash
+    rm -rf .git
+    git init
     ./.devcontainer/initialize_package.php MyVendorName
     ```
 
@@ -78,10 +85,9 @@ This repo uses the following CIs. On your use, register your repo first.
 
 4. Initial commit.
 
-    Create an empty Git repository and commit them.
+    Commit your first change.
 
     ```bash
-    git init
     git add .
     git commit -m 'initial commit'
     ```
@@ -91,11 +97,11 @@ This repo uses the following CIs. On your use, register your repo first.
     - [TravisCI](https://travis-ci.org/)
     - [COVERALLS](https://coveralls.io/)
 
-6. Re-name `ENVFILE.env.sample` to `ENVFILE.env`
+6. Re-name `COVERALLS.env.sample` to `COVERALLS.env` under `./tests/conf`.
 
-7. Get your access token from COVERALLS' settings and place/replace the token value in `ENVFILE.env`.
+7. Get your access token from COVERALLS' settings and place/replace the token value in `COVERALLS.env`.
 
-8. Run tests again to see COVERALLS' function.
+8. Run tests again to see COVERALLS' function-ability.
 
 9. If the local test passes then commit changes and push.
 
@@ -103,18 +109,20 @@ This repo uses the following CIs. On your use, register your repo first.
 
 ## Developing via Docker
 
-This repo can be develop via Docker.
+This repo can be developed via Docker. Run:
 
-## VS Code and Docker User
+```bash
+composer dev
+```
 
-If you use Visual Studio Code (a.k.a. VS Code) and have Docker installed, you can use **"Remote - Containers" extension** to develop your project over Docker container.
+Or, if you use Visual Studio Code (a.k.a. VS Code) and have Docker, then **"Remote - Containers" extension** is available.
 
 In this case, you don't need to install the packages or even PHP on your local env.
 
 1. Install Microsoft's ["Remote - Containers"](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension to your VS Code.
 2. `git clone` this repo to your local.
 3. Remove the `.git` directory and initialize as a new one by `git init`.
-4. In VSCode, open the folder in Container by F1 -> "Remote-Containers".
+4. Open folder in a Container by: F1 -> "Remote-Containers: Reopen in Container".
 
 </div></details>
 

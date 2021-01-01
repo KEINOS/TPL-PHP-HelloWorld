@@ -518,8 +518,8 @@ try {
         $msg_error = 'Error to rewrite .travis.yml to exclude initialization test.';
         throw new \RuntimeException($msg_error);
     }
-    echo '- YAML file ".travis.yml" over-written. Current file is:' . PHP_EOL;
-    echo file_get_contents($path_dir_package . DIR_SEP . '.travis.yml');
+    echo '- YAML file ".travis.yml" over-written.' . PHP_EOL;
+    //echo file_get_contents($path_dir_package . DIR_SEP . '.travis.yml');
 
     foreach ($list_path_files_delete as $path_file_delete) {
         if (is_file($path_file_delete)) {
